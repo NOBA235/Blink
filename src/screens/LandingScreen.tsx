@@ -3,7 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { theme } from "../theme";
 import { LogoMark } from "../components/LogoMark";
-import { PrimaryButton } from "../components/ui";
+import { PrimaryButton, GhostButton } from "../components/ui";
 
 export function LandingScreen() {
   return (
@@ -18,9 +18,14 @@ export function LandingScreen() {
             Blind first impressions. A live host. Real chemistry.
           </Text>
         </View>
-        <PrimaryButton onPress={() => router.push("/auth")} style={{ width: "100%", paddingVertical: 18 }}>
-          <Text style={{ color: theme.color.white, fontSize: 18, fontWeight: "700" }}>Let's play</Text>
-        </PrimaryButton>
+        <View style={{ width: "100%", gap: 10 }}>
+          <PrimaryButton onPress={() => router.push("/auth")} style={{ width: "100%", paddingVertical: 18 }}>
+            <Text style={{ color: theme.color.white, fontSize: 18, fontWeight: "700" }}>Let's play</Text>
+          </PrimaryButton>
+          <GhostButton onPress={() => router.push("/date-special")}>
+            Explore Date Special & Preferences
+          </GhostButton>
+        </View>
       </View>
     </SafeAreaView>
   );

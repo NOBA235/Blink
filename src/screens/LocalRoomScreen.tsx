@@ -20,7 +20,7 @@ function buildJudges(contestantId: string): Judge[] {
   const bots = shuffle(BOT_JUDGE_POOL).slice(0, 4).map((b, i) => ({
     id: `${contestantId}-bot-${i}`, name: b.name, photo: b.photo, isUser: false, popped: false,
   }));
-  const withUser = [...bots];
+  const withUser: Judge[] = [...bots];
   withUser.splice(2, 0, { id: `${contestantId}-user`, name: "You", isUser: true, popped: false, photo: null });
   return withUser;
 }

@@ -3,7 +3,8 @@ import { View, Text, Image, Pressable, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from "expo-image-picker";
-import { Camera, EyeOff, ChevronRight, Info, Settings as SettingsIcon } from "lucide-react-native";
+import { Camera, EyeOff, ChevronRight, Info, Settings as SettingsIcon, Sparkles } from "lucide-react-native";
+import { router } from "expo-router";
 import { theme } from "../theme";
 import { Chip, IconButton } from "../components/ui";
 import { useAppState } from "../hooks/useAppState";
@@ -11,7 +12,7 @@ import { useAppState } from "../hooks/useAppState";
 const c = theme.color;
 
 export function ProfileScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
-  const { profile, updatePhoto } = useAppState();
+  const { profile, updatePhoto, datePreferences } = useAppState();
   const [showReveal, setShowReveal] = useState(false);
   if (!profile) return null;
 
@@ -65,6 +66,33 @@ export function ProfileScreen({ onOpenSettings }: { onOpenSettings: () => void }
         {profile.interests.length === 0 && profile.prompts.length === 0 && (
           <Text style={{ color: c.text2, fontSize: theme.font.secondary }}>Add interests and prompts to bring your profile to life.</Text>
         )}
+
+        <Pressable
+          onPress={() => router.push("/date-preferences")}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            paddingVertical: 14,
+            borderTopWidth: 1,
+            borderTopColor: c.border,
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <Sparkles size={16} color={c.primary} />
+            <View>
+              <Text style={{ color: c.text, fontSize: theme.font.secondary, fontWeight: "600" }}>
+                Date Preferences
+              </Text>
+              <Text style={{ color: c.text2, fontSize: theme.font.caption }}>
+                {datePreferences?.activities?.length || datePreferences?.foods?.length
+                  ? `${datePreferences.activities.length} activities · ${datePreferences.foods.length} cuisines`
+                  : "Activities, cuisines & drinks"}
+              </Text>
+            </View>
+          </View>
+          <ChevronRight size={16} color={c.text3} />
+        </Pressable>
 
         <Pressable onPress={() => setShowReveal((s) => !s)} style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 12, borderTopWidth: 1, borderTopColor: c.border }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>

@@ -26,6 +26,8 @@ function RootNavigator() {
       <Stack.Screen name="auth" />
       <Stack.Screen name="onboarding" />
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="date-special" options={{ presentation: "card", animation: "slide_from_right" }} />
+      <Stack.Screen name="date-preferences" options={{ presentation: "card", animation: "slide_from_right" }} />
       <Stack.Screen name="room" options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }} />
       <Stack.Screen name="chat" options={{ presentation: "card", animation: "slide_from_right" }} />
     </Stack>

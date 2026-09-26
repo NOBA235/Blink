@@ -7,6 +7,10 @@ import { joinQueue, leaveQueue } from "../lib/roomActions";
 import { useMyRoomAssignment } from "../lib/useRealtimeRoom";
 import { pick } from "../data/hostLines";
 import { CONTESTANT_POOL, type Contestant } from "../data/contestants";
+import {
+  type DatePreferencesState,
+  DEFAULT_DATE_PREFERENCES,
+} from "../types/dating";
 
 const STORAGE_KEY = "pop-state";
 
@@ -19,6 +23,7 @@ export type LocalProfile = {
   hasVideo: boolean;
   interests: string[];
   prompts: { q: string; a: string }[];
+  datePreferences?: DatePreferencesState;
 };
 
 export type LocalMatch = {
@@ -64,6 +69,10 @@ type AppStateValue = {
   afterAuth: () => Promise<"onboarding" | "app">;
   handleOnboardingComplete: (p: LocalProfile) => Promise<void>;
   updatePhoto: (uri: string) => void;
+  // Date Preferences
+  datePreferences: DatePreferencesState;
+  updateDatePreferences: (prefs: Partial<DatePreferencesState>) => void;
+  resetDatePreferences: () => void;
   // Room flow
   activeRoomContestant: Contestant | null;
   activeRealRoomId: string | null;
@@ -88,6 +97,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [matches, setMatches] = useState<LocalMatch[]>([]);
   const [playedIds, setPlayedIds] = useState<string[]>([]);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [datePreferences, setDatePreferences] = useState<DatePreferencesState>(DEFAULT_DATE_PREFERENCES);
   const [activeRoomContestant, setActiveRoomContestant] = useState<Contestant | null>(null);
   const [activeRealRoomId, setActiveRealRoomId] = useState<string | null>(null);
   const [queueWaiting, setQueueWaiting] = useState(false);
@@ -127,6 +137,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         setPlayedIds(restored.playedIds || []);
         setSoundEnabled(restored.soundEnabled !== false);
       }
+      if (restored?.datePreferences) {
+        setDatePreferences(restored.datePreferences);
+      } else if (restored?.profile?.datePreferences) {
+        setDatePreferences(restored.profile.datePreferences);
+      }
       hasRestored.current = true;
       setBooting(false);
     }
@@ -136,9 +151,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!hasRestored.current || booting) return;
-    const snapshot = { profile, matches, playedIds, soundEnabled };
+    const snapshot = { profile, matches, playedIds, soundEnabled, datePreferences };
     storage.set(STORAGE_KEY, JSON.stringify(snapshot)).catch(() => {});
-  }, [profile, matches, playedIds, soundEnabled, booting]);
+  }, [profile, matches, playedIds, soundEnabled, datePreferences, booting]);
 
   const availableContestants = useMemo(
     () => CONTESTANT_POOL.filter((c) => !playedIds.includes(c.id)),
@@ -153,11 +168,25 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     return pool[Math.floor(Math.random() * pool.length)];
   }
 
+  function updateDatePreferences(next: Partial<DatePreferencesState>) {
+    setDatePreferences((prev) => {
+      const updated = { ...prev, ...next };
+      setProfile((p) => (p ? { ...p, datePreferences: updated } : p));
+      return updated;
+    });
+  }
+
+  function resetDatePreferences() {
+    setDatePreferences(DEFAULT_DATE_PREFERENCES);
+    setProfile((p) => (p ? { ...p, datePreferences: DEFAULT_DATE_PREFERENCES } : p));
+  }
+
   async function resetEverything() {
     try { await storage.delete(STORAGE_KEY); } catch {}
     setProfile(null);
     setMatches([]);
     setPlayedIds([]);
+    setDatePreferences(DEFAULT_DATE_PREFERENCES);
   }
 
   async function signOut() {
@@ -200,7 +229,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   function updatePhoto(uri: string) {
     setProfile((p) => (p ? { ...p, photo: uri } : p));
     if (myProfileId) {
-      supabase.from("profiles").update({ photo_url: uri }).eq("id", myProfileId).then(() => {}).catch(() => {});
+      supabase.from("profiles").update({ photo_url: uri }).eq("id", myProfileId).then(() => {}, () => {});
     }
   }
 
@@ -296,6 +325,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     playedIds, setPlayedIds, soundEnabled, toggleSound: () => setSoundEnabled((s) => !s),
     availableContestants, nextContestant, resetEverything, signOut, afterAuth,
     handleOnboardingComplete, updatePhoto,
+    datePreferences, updateDatePreferences, resetDatePreferences,
     activeRoomContestant, activeRealRoomId, queueWaiting, activeChat,
     enterLocalRoom, attemptRealRoom, cancelMatchmaking, handleLocalRoomExit, handleRealRoomExit,
     openChat, closeChat, sendMockMessage,

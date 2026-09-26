@@ -1,6 +1,7 @@
 import { View, Text, Image, Pressable, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ChevronRight } from "lucide-react-native";
+import { ChevronRight, Sparkles } from "lucide-react-native";
+import { router } from "expo-router";
 import { theme } from "../theme";
 import { PrimaryButton } from "../components/ui";
 import { useAppState } from "../hooks/useAppState";
@@ -10,7 +11,7 @@ const c = theme.color;
 export function HomeScreen({
   roomsAvailable, onEnterRoom, onOpenRooms, onOpenProfile, profileCompletion,
 }: { roomsAvailable: number; onEnterRoom: () => void; onOpenRooms: () => void; onOpenProfile: () => void; profileCompletion: number }) {
-  const { profile } = useAppState();
+  const { profile, datePreferences } = useAppState();
   if (!profile) return null;
 
   return (
@@ -43,6 +44,41 @@ export function HomeScreen({
             <Text style={{ color: c.white, fontSize: 18, fontWeight: "700" }}>Enter a room</Text>
           </PrimaryButton>
         </View>
+
+        {/* Date Special & Preferences Banner */}
+        <Pressable
+          onPress={() => router.push("/date-special")}
+          style={{
+            backgroundColor: "#FFFFFF",
+            borderRadius: theme.radius.xl,
+            padding: 20,
+            borderWidth: 1,
+            borderColor: "#EFE8EF",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <View style={{ flex: 1, paddingRight: 14 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4 }}>
+              <Sparkles size={14} color="#4E214E" />
+              <Text style={{ color: "#4E214E", fontSize: 11, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                Date Special
+              </Text>
+            </View>
+            <Text style={{ color: "#1C141E", fontSize: 17, fontWeight: "700", marginBottom: 3 }}>
+              Date Preferences
+            </Text>
+            <Text style={{ color: "#655966", fontSize: 13, lineHeight: 18 }}>
+              {datePreferences?.activities?.length || datePreferences?.foods?.length
+                ? `${datePreferences.activities.length} activities · ${datePreferences.foods.length} cuisines selected`
+                : "Customize your favorite activities, dining spots & drinks"}
+            </Text>
+          </View>
+          <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: "#F4EBF4", alignItems: "center", justifyContent: "center" }}>
+            <ChevronRight size={18} color="#4E214E" />
+          </View>
+        </Pressable>
 
         <View>
           {profileCompletion < 100 && (
