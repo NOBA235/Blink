@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Pop",
-    "slug": "pop-native",
+    "name": "Blink",
+    "slug": "blink-native",
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "pop",
+    "scheme": "blink",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
