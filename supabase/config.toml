@@ -1,0 +1,5 @@
+# Linked to the Blink project used by the native app.
+project_id = "dixwahctxzercyraxehk"
+
+[functions.generate-host-line]
+verify_jwt = true

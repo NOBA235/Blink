@@ -6,7 +6,8 @@ import { theme } from "../theme";
 import { PrimaryButton, SecondaryButton, Chip, IconButton, Card } from "../components/ui";
 import { JudgeRow, type JudgeForDisplay } from "../components/JudgeAvatar";
 import { AIHostCaption } from "../components/AIHostCaption";
-import { hostSay, shuffle } from "../data/hostLines";
+import { hostSay, shuffle, type HostCtx } from "../data/hostLines";
+import { fetchHostLine } from "../lib/hostAi";
 import { BOT_JUDGE_POOL, type Contestant } from "../data/contestants";
 import { useSound, buzzKeep, buzzPop, buzzMatch, buzzTick } from "../lib/sound";
 
@@ -53,6 +54,15 @@ export function LocalRoomScreen({
   const [finalPickId, setFinalPickId] = useState<string | null>(null);
   const [userLocked, setUserLocked] = useState(false);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const hostSeq = useRef(0);
+
+  function speak(event: string, ctx: HostCtx = {}) {
+    const token = ++hostSeq.current;
+    setHostLine(hostSay(event, ctx));
+    void fetchHostLine(event, ctx).then((line) => {
+      if (line && token === hostSeq.current) setHostLine(line);
+    });
+  }
 
   function after(ms: number, fn: () => void) {
     const id = setTimeout(fn, ms);
@@ -75,7 +85,7 @@ export function LocalRoomScreen({
       const target = cur.find((j) => j.id === id);
       playSound("pop", soundEnabled);
       buzzPop();
-      setHostLine(target?.isUser ? hostSay("USER_POPPED") : hostSay("PLAYER_POPPED", { remaining, name: botDisplayName }));
+      speak(target?.isUser ? "USER_POPPED" : "PLAYER_POPPED", { remaining, name: botDisplayName });
       return updated;
     });
   }
@@ -95,50 +105,50 @@ export function LocalRoomScreen({
     if (phase === "connecting") {
       after(750, () => setPhase("intro"));
     } else if (phase === "intro") {
-      setHostLine(hostSay("CONTESTANT_ENTERED", { name: contestant.name }));
+      speak("CONTESTANT_ENTERED", { name: contestant.name });
       after(2200, () => setPhase("countdown1"));
     } else if (phase === "countdown1") {
-      setHostLine(hostSay("COUNTDOWN_STARTED"));
+      speak("COUNTDOWN_STARTED");
       setCountdown(3);
       playSound("tick", soundEnabled); buzzTick();
       after(650, () => { setCountdown(2); playSound("tick", soundEnabled); buzzTick(); });
       after(1300, () => { setCountdown(1); playSound("tick", soundEnabled); buzzTick(); });
       after(1950, () => setPhase("decision1"));
     } else if (phase === "decision1") {
-      setHostLine(hostSay("DECISION_PROMPT"));
+      speak("DECISION_PROMPT");
       setUserLocked(false);
       scheduleBotDecisions(0.3);
       after(6500, () => resolveRound(1));
     } else if (phase === "results1") {
       const remaining = judges.filter((j) => !j.popped).length;
-      setHostLine(hostSay("ROUND1_COMPLETE", { remaining }));
+      speak("ROUND1_COMPLETE", { remaining });
       after(2000, () => setPhase("question2"));
     } else if (phase === "question2") {
-      setHostLine(hostSay("PERSONALITY_ASKED"));
+      speak("PERSONALITY_ASKED");
       after(2600, () => setPhase("answer2"));
     } else if (phase === "answer2") {
-      setHostLine(hostSay("PERSONALITY_ANSWERED"));
+      speak("PERSONALITY_ANSWERED");
       after(500, () => setPhase("decision2"));
     } else if (phase === "decision2") {
-      setHostLine(hostSay("DECISION_PROMPT"));
+      speak("DECISION_PROMPT");
       setUserLocked(false);
       scheduleBotDecisions(0.22);
       after(5500, () => resolveRound(2));
     } else if (phase === "results2") {
       const remaining = judges.filter((j) => !j.popped).length;
-      setHostLine(hostSay("ROUND2_COMPLETE", { remaining }));
+      speak("ROUND2_COMPLETE", { remaining });
       after(1800, () => setPhase("reveal3"));
     } else if (phase === "reveal3") {
-      setHostLine(hostSay("REVEAL_STARTED"));
+      speak("REVEAL_STARTED");
       setRevealStep(0);
     } else if (phase === "final") {
-      setHostLine(hostSay("FINAL_CHOICE"));
+      speak("FINAL_CHOICE");
       const pick = pickFinal(judges.filter((j) => !j.popped));
       after(1300, () => { setFinalPickId(pick); playSound("tick", soundEnabled); buzzTick(); });
       after(3200, () => setPhase("outcome"));
     } else if (phase === "outcome") {
       const matched = Boolean(finalPickId && userJudge && finalPickId === userJudge.id);
-      setHostLine(matched ? hostSay("MATCH_CREATED") : hostSay("NO_MATCH"));
+      speak(matched ? "MATCH_CREATED" : "NO_MATCH");
       if (matched) { playSound("match", soundEnabled); buzzMatch(); }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

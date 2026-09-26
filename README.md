@@ -30,17 +30,25 @@ Run that after `npm install` if you hit any dependency-mismatch warnings.
 
 ## This shares its backend with the web app
 
-Same Supabase project, same schema, same edge function — a real judge on
-the web app and a real judge on this native app can end up in the same
-live room together. See the web app's `supabase/` folder for the
-migrations and the AI host edge function; nothing there needs to change
-for this app to use it. You only need to:
+Same Supabase project, same schema, same AI host. A real judge on the
+web app and a real judge on this native app can end up in the same live
+room together.
 
-1. Have already run the three migrations against your Supabase project
-   (from the web app's `supabase/migrations/`).
-2. Fill in `.env` here with the same `EXPO_PUBLIC_SUPABASE_URL` and
-   `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` as the web app's
-   `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY`.
+The host is **not** Gemini inside the React Native bundle. Live rooms
+subscribe to `room_events` rows with `event_type = 'host_line'`. Those
+rows are written by `supabase/functions/generate-host-line`, which calls
+**Gemini 3.5 Flash** (`gemini-3.5-flash`) using `GEMINI_API_KEY` stored
+as a Supabase secret. Local (bot) rooms invoke that same function and
+fall back to canned lines if it isn't deployed yet.
+
+You need to:
+
+1. Run the three migrations in `supabase/migrations/` against your project.
+2. Fill in `.env` with `EXPO_PUBLIC_SUPABASE_URL` and
+   `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+3. Deploy the host function and set the Gemini secret (see `.env.example`).
+4. Run the two `alter database` statements in `.env.example` so the
+   `on_room_event_notify_host` trigger can POST into the function.
 
 ## What's different from the web version, and why
 

@@ -1,9 +1,9 @@
-// MOCK: replace with a real AI-host call keyed on the same event names (the
-// web app's edge function, generate-host-line, already does this against a
-// shared Supabase project — see the room logic below for where a real room
-// reads host lines from room_events instead of this local bank).
+// Instant fallback lines if Gemini is slow or the edge function isn't deployed.
+// Live rooms still read host_line rows from room_events (written by
+// supabase/functions/generate-host-line). Local rooms call that function
+// and upgrade from these canned lines when a generated one arrives.
 
-type HostCtx = { name?: string; remaining?: number };
+export type HostCtx = { name?: string; remaining?: number };
 
 export const HOST_LINES: Record<string, (ctx: HostCtx) => string> = {
   CONTESTANT_ENTERED: (ctx) => pick([
