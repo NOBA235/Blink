@@ -7,5 +7,5 @@
       "destination": "/index.html"
     }
   ],
-  "outputDirectory": "public"
+  "outputDirectory": "dist"
 }
