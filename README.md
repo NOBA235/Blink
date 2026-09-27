@@ -169,12 +169,22 @@ EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-supabase-anon-key
 ```
 
 ### 3. Launch Development Server
+
+#### Option A: Local Network (Same Wi-Fi)
 ```bash
 npx expo start
 ```
-* Press `i` to open in iOS Simulator.
-* Press `a` to open in Android Emulator.
-* Scan the terminal QR code with **Expo Go** on your physical device.
+
+#### Option B: Tunnel Mode (Recommended for Expo Go on different networks)
+If your physical device and development machine are on different networks, behind a firewall, or experience local connection issues in Expo Go, run with the `--tunnel` flag:
+
+```bash
+npx expo start --tunnel
+```
+* `@expo/ngrok` is pre-configured in `devDependencies` to handle secure tunnel connections seamlessly.
+* Scan the generated QR code with **Expo Go** (Android) or the Camera app (iOS) to test on your phone.
+* Press `w` to launch the Web app in your default browser.
+* Press `i` to open in iOS Simulator / `a` for Android Emulator.
 
 ---
 
