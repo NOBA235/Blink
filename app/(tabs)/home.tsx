@@ -3,7 +3,7 @@ import { HomeScreen } from "../../src/screens/HomeScreen";
 import { useAppState } from "../../src/hooks/useAppState";
 
 export default function Home() {
-  const { profile, availableContestants, attemptRealRoom } = useAppState();
+  const { profile } = useAppState();
   if (!profile) return null;
 
   const profileCompletion = Math.min(
@@ -13,9 +13,6 @@ export default function Home() {
 
   return (
     <HomeScreen
-      roomsAvailable={Math.max(1, availableContestants.length)}
-      onEnterRoom={() => { attemptRealRoom(); router.push("/room"); }}
-      onOpenRooms={() => router.push("/(tabs)/rooms")}
       onOpenProfile={() => router.push("/(tabs)/profile")}
       profileCompletion={profileCompletion}
     />

@@ -1,12 +1,9 @@
-import { createContext, useContext, useState, useEffect, useRef, useMemo, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { storage } from "../lib/storage";
 import { supabase } from "../lib/supabase";
 import { onAuthChange, signOut as supabaseSignOut } from "../lib/auth";
-import { joinQueue, leaveQueue } from "../lib/roomActions";
-import { useMyRoomAssignment } from "../lib/useRealtimeRoom";
-import { pick } from "../data/hostLines";
-import { CONTESTANT_POOL, type Contestant } from "../data/contestants";
+import { createHostedRoom, joinRoom as joinRoomAction, analyzeCompatibility, CompatibilityResult } from "../lib/roomActions";
 import {
   type DatePreferencesState,
   DEFAULT_DATE_PREFERENCES,
@@ -31,6 +28,14 @@ export type LocalMatch = {
   contestant: { name: string; photo: string };
   messages: { from: "user" | "them"; text: string }[];
   isReal?: boolean;
+};
+
+export type ActiveRoomState = {
+  id: string;
+  role: "host" | "participant";
+  title: string;
+  vibe: string;
+  maxParticipants: number;
 };
 
 function supabaseProfileToLocal(row: any): LocalProfile {
@@ -58,12 +63,8 @@ type AppStateValue = {
   setProfile: (p: LocalProfile) => void;
   matches: LocalMatch[];
   setMatches: React.Dispatch<React.SetStateAction<LocalMatch[]>>;
-  playedIds: string[];
-  setPlayedIds: React.Dispatch<React.SetStateAction<string[]>>;
   soundEnabled: boolean;
   toggleSound: () => void;
-  availableContestants: Contestant[];
-  nextContestant: (excludeId?: string) => Contestant;
   resetEverything: () => Promise<void>;
   signOut: () => Promise<void>;
   afterAuth: () => Promise<"onboarding" | "app">;
@@ -73,19 +74,18 @@ type AppStateValue = {
   datePreferences: DatePreferencesState;
   updateDatePreferences: (prefs: Partial<DatePreferencesState>) => void;
   resetDatePreferences: () => void;
-  // Room flow
-  activeRoomContestant: Contestant | null;
-  activeRealRoomId: string | null;
-  queueWaiting: boolean;
+  // Room state
+  activeRoom: ActiveRoomState | null;
+  compatibilityScores: Map<string, CompatibilityResult>;
+  hostRoom: (title: string, vibe: string, max: number) => Promise<void>;
+  joinRoom: (roomId: string, title: string, vibe: string, max: number) => Promise<void>;
+  requestCompatibility: (roomId: string, participantId: string) => Promise<void>;
+  exitRoom: () => void;
+  handleMatch: (matchId: string, name: string, photo: string) => void;
+  // Chat
   activeChat: LocalMatch | null;
-  enterLocalRoom: (contestant?: Contestant) => void;
-  attemptRealRoom: () => Promise<void>;
-  cancelMatchmaking: () => void;
-  handleLocalRoomExit: (result: { matched: boolean; contestant: Contestant; nextRoom?: boolean; openChat?: boolean }) => void;
-  handleRealRoomExit: (result: { matched: boolean; matchId?: string; otherProfile?: any }) => void;
   openChat: (matchId: string) => void;
   closeChat: () => void;
-  sendMockMessage: (matchId: string, text: string) => void;
 };
 
 const AppStateContext = createContext<AppStateValue | null>(null);
@@ -95,28 +95,16 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<LocalProfile | null>(null);
   const [matches, setMatches] = useState<LocalMatch[]>([]);
-  const [playedIds, setPlayedIds] = useState<string[]>([]);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [datePreferences, setDatePreferences] = useState<DatePreferencesState>(DEFAULT_DATE_PREFERENCES);
-  const [activeRoomContestant, setActiveRoomContestant] = useState<Contestant | null>(null);
-  const [activeRealRoomId, setActiveRealRoomId] = useState<string | null>(null);
-  const [queueWaiting, setQueueWaiting] = useState(false);
+  const [activeRoom, setActiveRoom] = useState<ActiveRoomState | null>(null);
+  const [compatibilityScores, setCompatibilityScores] = useState<Map<string, CompatibilityResult>>(new Map());
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const hasRestored = useRef(false);
-  const queueTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const myProfileId = session?.user?.id || null;
 
   useEffect(() => onAuthChange(setSession), []);
-
-  const assignedRoomId = useMyRoomAssignment(myProfileId, queueWaiting);
-  useEffect(() => {
-    if (assignedRoomId && queueWaiting) {
-      if (queueTimeoutRef.current) clearTimeout(queueTimeoutRef.current);
-      setQueueWaiting(false);
-      setActiveRealRoomId(assignedRoomId);
-    }
-  }, [assignedRoomId, queueWaiting]);
 
   useEffect(() => {
     let cancelled = false;
@@ -134,7 +122,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       if (restored?.profile) {
         setProfile(restored.profile);
         setMatches(restored.matches || []);
-        setPlayedIds(restored.playedIds || []);
         setSoundEnabled(restored.soundEnabled !== false);
       }
       if (restored?.datePreferences) {
@@ -151,22 +138,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!hasRestored.current || booting) return;
-    const snapshot = { profile, matches, playedIds, soundEnabled, datePreferences };
+    const snapshot = { profile, matches, soundEnabled, datePreferences };
     storage.set(STORAGE_KEY, JSON.stringify(snapshot)).catch(() => {});
-  }, [profile, matches, playedIds, soundEnabled, datePreferences, booting]);
-
-  const availableContestants = useMemo(
-    () => CONTESTANT_POOL.filter((c) => !playedIds.includes(c.id)),
-    [playedIds]
-  );
-
-  function nextContestant(excludeId?: string): Contestant {
-    const fresh = CONTESTANT_POOL.filter((c) => c.id !== excludeId && !playedIds.includes(c.id));
-    if (fresh.length) return fresh[Math.floor(Math.random() * fresh.length)];
-    const anyOther = CONTESTANT_POOL.filter((c) => c.id !== excludeId);
-    const pool = anyOther.length ? anyOther : CONTESTANT_POOL;
-    return pool[Math.floor(Math.random() * pool.length)];
-  }
+  }, [profile, matches, soundEnabled, datePreferences, booting]);
 
   function updateDatePreferences(next: Partial<DatePreferencesState>) {
     setDatePreferences((prev) => {
@@ -185,7 +159,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     try { await storage.delete(STORAGE_KEY); } catch {}
     setProfile(null);
     setMatches([]);
-    setPlayedIds([]);
     setDatePreferences(DEFAULT_DATE_PREFERENCES);
   }
 
@@ -193,8 +166,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     try { await supabaseSignOut(); } catch {}
   }
 
-  // Fires after a successful sign-up or sign-in: decides whether this
-  // account still needs Onboarding, or already has a full profile.
   async function afterAuth(): Promise<"onboarding" | "app"> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return "onboarding";
@@ -220,10 +191,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         prompts: p.prompts,
         updated_at: new Date().toISOString(),
       }).eq("id", user.id);
-    } catch {
-      // Local profile is already set above — a failed sync just means this
-      // account's server-side profile stays incomplete until next edit.
-    }
+    } catch {}
   }
 
   function updatePhoto(uri: string) {
@@ -233,102 +201,58 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  function enterLocalRoom(contestant?: Contestant) {
-    setActiveRoomContestant(contestant || nextContestant());
+  async function hostRoom(title: string, vibe: string, max: number) {
+    const id = await createHostedRoom(title, vibe, max);
+    setActiveRoom({ id, role: "host", title, vibe, maxParticipants: max });
   }
 
-  // Tries real matchmaking first; if it doesn't fill within ~12 seconds,
-  // falls back to the local simulation rather than leaving the player
-  // stuck in an empty queue. Mirrors the web app's attemptRealRoom exactly.
-  async function attemptRealRoom() {
-    if (!myProfileId) { enterLocalRoom(); return; }
-    setQueueWaiting(true);
-    let immediateRoomId: string | null = null;
+  async function joinRoom(roomId: string, title: string, vibe: string, max: number) {
+    await joinRoomAction(roomId);
+    setActiveRoom({ id: roomId, role: "participant", title, vibe, maxParticipants: max });
+  }
+
+  async function requestCompatibility(roomId: string, participantId: string) {
+    if (!myProfileId) return;
     try {
-      immediateRoomId = await joinQueue("judge");
-    } catch {
-      setQueueWaiting(false);
-      enterLocalRoom();
-      return;
-    }
-    if (immediateRoomId) {
-      setQueueWaiting(false);
-      setActiveRealRoomId(immediateRoomId);
-      return;
-    }
-    queueTimeoutRef.current = setTimeout(() => {
-      setQueueWaiting((cur) => {
-        if (!cur) return cur; // already resolved by the room-assignment effect
-        leaveQueue().catch(() => {});
-        enterLocalRoom();
-        return false;
+      const result = await analyzeCompatibility(roomId, myProfileId, participantId);
+      setCompatibilityScores((prev) => {
+        const next = new Map(prev);
+        next.set(participantId, result);
+        return next;
       });
-    }, 12000);
-  }
-
-  function cancelMatchmaking() {
-    if (queueTimeoutRef.current) clearTimeout(queueTimeoutRef.current);
-    setQueueWaiting(false);
-    leaveQueue().catch(() => {});
-  }
-
-  function handleLocalRoomExit(result: { matched: boolean; contestant: Contestant; nextRoom?: boolean; openChat?: boolean }) {
-    setPlayedIds((ids) => (ids.includes(result.contestant.id) ? ids : [...ids, result.contestant.id]));
-    if (result.matched) {
-      const match: LocalMatch = { id: `${result.contestant.id}-${Date.now()}`, contestant: result.contestant, messages: [] };
-      setMatches((m) => [...m, match]);
-      if (result.openChat) setActiveChatId(match.id);
-    }
-    if (result.nextRoom) {
-      setActiveRoomContestant(nextContestant(result.contestant.id));
-    } else {
-      setActiveRoomContestant(null);
+    } catch (e) {
+      console.error("Failed to analyze compatibility", e);
     }
   }
 
-  function handleRealRoomExit(result: { matched: boolean; matchId?: string; otherProfile?: any }) {
-    setActiveRealRoomId(null);
-    if (result.matched && result.matchId) {
-      const match: LocalMatch = {
-        id: result.matchId,
-        contestant: { name: result.otherProfile?.name, photo: result.otherProfile?.photo_url },
-        messages: [],
-        isReal: true,
-      };
-      setMatches((m) => [...m, match]);
-      setActiveChatId(match.id);
-    }
+  function exitRoom() {
+    setActiveRoom(null);
+    setCompatibilityScores(new Map());
+  }
+
+  function handleMatch(matchId: string, name: string, photo: string) {
+    const match: LocalMatch = {
+      id: matchId,
+      contestant: { name, photo },
+      messages: [],
+      isReal: true,
+    };
+    setMatches((m) => [...m, match]);
+    setActiveChatId(matchId);
   }
 
   function openChat(matchId: string) { setActiveChatId(matchId); }
   function closeChat() { setActiveChatId(null); }
 
-  function sendMockMessage(matchId: string, text: string) {
-    setMatches((cur) => cur.map((m) => (m.id === matchId ? { ...m, messages: [...m.messages, { from: "user" as const, text }] } : m)));
-    setTimeout(() => {
-      setMatches((cur) => cur.map((m) => {
-        if (m.id !== matchId) return m;
-        const replies = [
-          "Ha, I like that. What made you say keep instead of pop?",
-          "Okay you're funnier than your profile let on.",
-          "Honestly wasn't sure I'd survive round one. Glad I did.",
-        ];
-        return { ...m, messages: [...m.messages, { from: "them" as const, text: pick(replies) }] };
-      }));
-    }, 1400 + Math.random() * 900);
-  }
-
   const activeChat = matches.find((m) => m.id === activeChatId) || null;
 
   const value: AppStateValue = {
     booting, session, myProfileId, profile, setProfile, matches, setMatches,
-    playedIds, setPlayedIds, soundEnabled, toggleSound: () => setSoundEnabled((s) => !s),
-    availableContestants, nextContestant, resetEverything, signOut, afterAuth,
-    handleOnboardingComplete, updatePhoto,
+    soundEnabled, toggleSound: () => setSoundEnabled((s) => !s),
+    resetEverything, signOut, afterAuth, handleOnboardingComplete, updatePhoto,
     datePreferences, updateDatePreferences, resetDatePreferences,
-    activeRoomContestant, activeRealRoomId, queueWaiting, activeChat,
-    enterLocalRoom, attemptRealRoom, cancelMatchmaking, handleLocalRoomExit, handleRealRoomExit,
-    openChat, closeChat, sendMockMessage,
+    activeRoom, compatibilityScores, hostRoom, joinRoom, requestCompatibility, exitRoom, handleMatch,
+    openChat, closeChat, activeChat,
   };
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;

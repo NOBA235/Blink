@@ -1,62 +1,60 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "./supabase";
+import { OpenRoom, getOpenRooms } from "./roomActions";
 
 export type RoomParticipant = {
   room_id: string;
   profile_id: string;
-  role: "contestant" | "judge";
-  round1_decision: "pending" | "keep" | "pop";
-  round2_decision: "pending" | "keep" | "pop";
+  role: "contestant" | "host";
+  status: "active" | "eliminated" | "matched" | "left";
   joined_at: string;
-  profile?: { name?: string; photo_url?: string };
-};
-
-export type Room = {
-  id: string;
-  contestant_id: string;
-  phase: string;
-  phase_deadline: string | null;
-  created_at: string;
-  closed_at: string | null;
-  contestant?: {
+  profile?: {
     name?: string;
     age?: number;
-    location?: string;
     photo_url?: string;
+    location?: string;
     interests?: string[];
+    prompts?: { q: string; a: string }[];
   };
 };
 
-export type RoomEvent = { id: number; room_id: string; event_type: string; payload: any; created_at: string };
+export type HostedRoom = {
+  id: string;
+  host_id: string;
+  title: string;
+  vibe: string;
+  max_participants: number;
+  phase: string;
+  created_at: string;
+  closed_at: string | null;
+  host?: {
+    name?: string;
+    age?: number;
+    photo_url?: string;
+  };
+};
 
-// While waiting in the matchmaking queue, this is how a client finds out a
-// room has formed and it's been placed in it. Relies on room_participants'
-// self-referential RLS policy: a user can always see their own row, so
-// Realtime is able to deliver this INSERT to them specifically.
-export function useMyRoomAssignment(profileId: string | null, enabled: boolean) {
-  const [roomId, setRoomId] = useState<string | null>(null);
+export type RoomEvent = {
+  id: number;
+  room_id: string;
+  event_type: string;
+  payload: Record<string, unknown>;
+  sender_id?: string;
+  created_at: string;
+};
 
-  useEffect(() => {
-    if (!enabled || !profileId) return;
-    const channel = supabase
-      .channel(`my-assignment:${profileId}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "room_participants", filter: `profile_id=eq.${profileId}` },
-        (payload: any) => setRoomId(payload.new.room_id)
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [profileId, enabled]);
+export type OpenRoomListing = OpenRoom;
 
-  return roomId;
-}
+export type ChatMessage = {
+  id: number;
+  match_id: string;
+  sender_id: string;
+  text: string;
+  created_at: string;
+};
 
-// Live state for a room you're already in: current phase/deadline, the
-// roster with live decisions, and the append-only event feed (host lines,
-// the personality question/answer, decisions, the final outcome).
-export function useRealtimeRoom(roomId: string | null) {
-  const [room, setRoom] = useState<Room | null>(null);
+export function useHostedRoom(roomId: string | null) {
+  const [room, setRoom] = useState<HostedRoom | null>(null);
   const [participants, setParticipants] = useState<RoomParticipant[]>([]);
   const [events, setEvents] = useState<RoomEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,13 +69,13 @@ export function useRealtimeRoom(roomId: string | null) {
 
     async function loadInitial() {
       const [roomRes, participantsRes, eventsRes] = await Promise.all([
-        supabase.from("rooms").select("*, contestant:contestant_id(*)").eq("id", roomId).single(),
+        supabase.from("rooms").select("*, host:host_id(*)").eq("id", roomId).single(),
         supabase.from("room_participants").select("*, profile:profile_id(*)").eq("room_id", roomId),
         supabase.from("room_events").select("*").eq("room_id", roomId).order("created_at", { ascending: true }),
       ]);
       if (cancelled) return;
       if (roomRes.error) { setError(roomRes.error as Error); setLoading(false); return; }
-      setRoom(roomRes.data as Room);
+      setRoom(roomRes.data as HostedRoom);
       setParticipants((participantsRes.data as RoomParticipant[]) || []);
       setEvents((eventsRes.data as RoomEvent[]) || []);
       if (eventsRes.data?.length) lastEventId.current = eventsRes.data[eventsRes.data.length - 1].id;
@@ -86,11 +84,22 @@ export function useRealtimeRoom(roomId: string | null) {
     loadInitial();
 
     const channel = supabase
-      .channel(`room:${roomId}`)
+      .channel(`hosted-room:${roomId}`)
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "rooms", filter: `id=eq.${roomId}` },
         (payload: any) => setRoom((cur) => (cur ? { ...cur, ...payload.new } : cur))
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "room_participants", filter: `room_id=eq.${roomId}` },
+        async (payload: any) => {
+          const { data } = await supabase.from("profiles").select("*").eq("id", payload.new.profile_id).single();
+          setParticipants((cur) => {
+            if (cur.some(p => p.profile_id === payload.new.profile_id)) return cur;
+            return [...cur, { ...payload.new, profile: data }];
+          });
+        }
       )
       .on(
         "postgres_changes",
@@ -118,12 +127,48 @@ export function useRealtimeRoom(roomId: string | null) {
     };
   }, [roomId]);
 
-  return { room, participants, events, loading, error };
+  const activeParticipants = participants.filter((p) => p.status === "active" && p.role === "contestant");
+  const eliminatedParticipants = participants.filter((p) => p.status === "eliminated" && p.role === "contestant");
+  const hostQuestion = events.filter((e) => e.event_type === "host_question").pop() || null;
+  const participantAnswers = events.filter((e) => e.event_type === "participant_answer");
+
+  return { room, participants, activeParticipants, eliminatedParticipants, events, hostQuestion, participantAnswers, loading, error };
 }
 
-export type ChatMessage = { id: number; match_id: string; sender_id: string; text: string; created_at: string };
+export function useOpenRooms(enabled: boolean) {
+  const [rooms, setRooms] = useState<OpenRoomListing[]>([]);
+  const [loading, setLoading] = useState(true);
 
-// Live messages for a real match.
+  async function refresh() {
+    try {
+      setLoading(true);
+      const data = await getOpenRooms();
+      setRooms(data);
+    } catch (err) {
+      console.error("Failed to fetch open rooms:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!enabled) return;
+    refresh();
+
+    const channel = supabase
+      .channel("public-rooms")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "rooms" }, refresh)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "rooms" }, refresh)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [enabled]);
+
+  return { rooms, loading, refresh };
+}
+
 export function useRealtimeMessages(matchId: string | null) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);

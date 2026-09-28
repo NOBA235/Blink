@@ -2,81 +2,98 @@
 
 <div align="center">
 
-**Dating, but make it a game.**  
-*Blind first impressions. Real-time matchmaking. Autonomous AI Host. Editorial Date Concierge.*
+**Find your perfect match. Connect with people who match your vibe.**  
+*Real-time rooms. AI-powered compatibility. Meaningful connections.*
 
 [![Expo SDK](https://img.shields.io/badge/Expo_SDK-57.0.0-000020?style=for-the-badge&logo=expo&logoColor=white)](https://expo.dev)
 [![React Native](https://img.shields.io/badge/React_Native-0.81.5-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactnative.dev)
 [![React](https://img.shields.io/badge/React-19.1.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
 [![Supabase](https://img.shields.io/badge/Supabase-Realtime_%26_Auth-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Strict_5.6-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![Gemini](https://img.shields.io/badge/AI_Host-Gemini_3.5_Flash-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev)
+[![Gemini](https://img.shields.io/badge/AI_Engine-Gemini_3.5_Flash-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev)
 
 </div>
 
 ---
 
-## Executive Overview
+## What is Blink?
 
-**Blink** is a next-generation consumer mobile dating experience built for the modern attention economy. By replacing endless, low-intent swiping with high-energy live speed dating rooms, Blink delivers authentic chemistry at scale. 
+**Blink** is a next-generation mobile app for finding people who truly match your vibe. Instead of endless swiping through profiles, Blink puts you in live rooms where real connections happen in real time.
 
-Contestants step into the hot seat before a live panel of five judges. Across rapid-fire decision rounds, an autonomous AI Host provides live commentary, witty roasts, and personality prompts. Players who survive the cut transition into private direct chats and a bespoke, **Hinge-inspired Date Preferences Engine** that curates their ideal date activities, dining spots, and drinks.
+**Host a room** and let people come to you — or **join someone's room** and compete to be their perfect match. An AI-powered **Whisper Engine** analyzes compatibility behind the scenes, helping hosts make better decisions based on shared interests, food preferences, and lifestyle alignment.
 
----
-
-## Key Highlights
-
-### ⚡ Live Speed-Dating Game Loop
-* **Multi-Round Elimination**: Rapid blind first impressions where judges vote in real time (`keep` or `pop`).
-* **Reveal Phase**: Unveils lifestyle, career, and photos only after chemistry is established.
-* **Instant Matchmaking**: Distributed room allocation powered by Supabase Realtime with automatic local fallback to guarantee sub-10s time-to-game.
-
-### 🎙️ Autonomous AI Host
-* Powered by **Gemini 3.5 Flash** on Deno edge runtimes.
-* Context-aware lines generated dynamically from contestants' real-time answers and judge voting trends.
-* Zero-latency fallback cache for rock-solid stability even in low-connectivity conditions.
-
-### 🍷 Editorial Date Concierge & Preferences
-* **Hinge-Grade Aesthetics**: Warm blush/lavender-gray canvas (`#FAF4F8`), deep plum branding (`#4E214E`), and sophisticated Georgian editorial typography.
-* **Responsive Category Architecture**: Tactile visual cards for date activities (`Drinks`, `Dining`, `Cinema`, `Live Music`, `Stroll`, `Arcades`) with zero overflow on any device viewport.
-* **Dynamic Date Style Summary**: Real-time aggregation of food and beverage pairings (`Pizza · Sushi`, `Coffee · Cocktails`) with clean empty states.
-
-### 🎧 Tactile Multi-Sensory UX
-* **Offline PCM Audio Engine**: Zero-latency native audio synthesis for room ticks, pops, keeps, and match celebrations via `expo-audio`.
-* **Physics-Driven Haptics**: Subtle, discrete tactile feedback on card taps, chip selections, and voting actions via `expo-haptics`.
-* **Mobile-First Ergonomics**: Strict $\ge 44\times 44\text{dp}$ touch targets, Dynamic Island compatibility, and full bottom Safe Area insets.
+The result? Faster, more intentional connections with people you'll actually vibe with.
 
 ---
 
-## System Architecture
+## How It Works
+
+### 🎤 Host a Room
+Create a live room, set the vibe (Casual, Romantic, Adventurous...), and wait for participants to join. You're in control.
+
+### 🎯 Join a Room
+Browse live rooms, see the host's vibe and profile, and jump in. Compete across three rounds to be their pick.
+
+### 🤖 AI Whisper Engine
+As participants join, Blink's AI analyzes their profile against yours — shared interests, food & drink preferences, activity alignment — and whispers compatibility insights only you can see: *"She shares 4 interests with you"*, *"His food preferences align 90%"*.
+
+### 🔄 Three Rounds
+1. **First Impressions** — Host sees participants with AI compatibility scores. Eliminate who doesn't fit.
+2. **Icebreakers** — AI suggests personalized questions. Participants answer live. Host narrows down.
+3. **The Reveal** — Full profiles unlocked. AI shows detailed compatibility breakdown. Host picks their match.
+
+### 💬 Real Chat
+Matched? Enter real-time private messaging powered by Supabase Realtime. No bots, no delays — just real conversation.
+
+---
+
+## Key Features
+
+| Feature | Description |
+|---------|-------------|
+| **Live Rooms** | Real-time multiplayer rooms with WebSocket sync via Supabase Realtime |
+| **Host & Participant Roles** | Choose to host (you pick) or compete (get picked) |
+| **AI Compatibility Engine** | Gemini 3.5 Flash analyzes profiles and generates whisper insights |
+| **Date Preferences** | Curate your ideal date — activities, cuisines, drinks — powered by a Hinge-inspired UI |
+| **Real-Time Chat** | Instant messaging with your matches via Supabase Realtime |
+| **Tactile Audio & Haptics** | Native sound effects and device vibrations for immersive feedback |
+| **Warm Editorial Design** | Hinge-grade aesthetics with deep plum branding and serif typography |
+
+---
+
+## Architecture
 
 ```text
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        BLINK CLIENT (EXPO / RN)                        │
 │                                                                        │
 │   Expo Router (Stack + Tabs)                                           │
-│   ├── (tabs)/home ──── Live Rooms, Profile Health, Date Concierge      │
-│   ├── (tabs)/rooms ─── Room Lineup & Blind Queues                      │
-│   ├── (tabs)/matches ─ Verified Matches & Realtime Chat                │
+│   ├── (tabs)/home ──── Host a Room / Join a Room / Date Preferences    │
+│   ├── (tabs)/rooms ─── Browse Live Rooms (real-time from Supabase)     │
+│   ├── (tabs)/matches ─ Your Matches & Real-Time Chat                   │
+│   ├── create-room ──── Room Setup (title, vibe, max participants)       │
+│   ├── room ──────────── Host Room View / Participant Room View          │
 │   ├── date-special ─── Date Concierge Onboarding                       │
-│   └── date-preferences Things to Do, Foods, Drinks & Summary Card      │
-└─────────────────────────────────┬──────────────────────────────────────┘
-                                  │
-       WebSockets (Realtime)      │      PostgREST API / Storage
-                                  ▼
+│   └── date-preferences Activities, Foods, Drinks & Summary Card        │
+└─────────────────────────────────────┬──────────────────────────────────┘
+                                      │
+         WebSockets (Realtime)        │        PostgREST API
+                                      ▼
 ┌────────────────────────────────────────────────────────────────────────┐
 │                          SUPABASE CLUSTER                              │
 │                                                                        │
-│   ├── Postgres Engine: profiles, rooms, room_judges, room_events       │
-│   ├── Database Trigger: on_room_event_notify_host                      │
-│   ├── Realtime Channels: broadcast vote tallies & room state transitions│
-│   └── Edge Functions: generate-host-line (Deno Runtime)               │
-└─────────────────────────────────┬──────────────────────────────────────┘
-                                  │
-                                  ▼
+│   ├── Postgres: profiles, rooms, room_participants, room_events,       │
+│   │             compatibility_scores, matches, messages                 │
+│   ├── RPCs: create_hosted_room, join_room, eliminate_participant,       │
+│   │         pick_match, advance_hosted_room, get_open_rooms            │
+│   ├── Realtime Channels: room state, participant joins, chat messages  │
+│   └── Edge Functions: analyze-compatibility, generate-host-line        │
+└─────────────────────────────────────┬──────────────────────────────────┘
+                                      │
+                                      ▼
 ┌────────────────────────────────────────────────────────────────────────┐
 │                         GEMINI 3.5 FLASH ENGINE                        │
-│   Generates contextual host banter, roasts & personality questions     │
+│   Analyzes profile compatibility & generates whisper insights          │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -89,76 +106,77 @@ blink/
 ├── app/                              # Expo Router file-based navigation
 │   ├── _layout.tsx                   # Root navigation, theme & audio providers
 │   ├── (tabs)/                       # Tab navigator: Home, Rooms, Matches, Profile
-│   ├── date-special.tsx              # Screen 1: Date Special Onboarding
-│   ├── date-preferences.tsx          # Screen 2: Date Preferences & Summary Card
-│   ├── room.tsx                      # Live / local speed dating game room
-│   ├── chat.tsx                      # High-intent 1:1 post-match messaging
-│   └── auth.tsx                      # Supabase authentication flow
+│   ├── create-room.tsx               # Host room setup screen
+│   ├── room.tsx                      # Live room dispatcher (Host/Participant views)
+│   ├── date-special.tsx              # Date Concierge onboarding
+│   ├── date-preferences.tsx          # Date Preferences editor
+│   ├── chat.tsx                      # Real-time 1:1 messaging
+│   └── auth.tsx                      # Authentication flow
 ├── src/
+│   ├── screens/
+│   │   ├── CreateRoomScreen.tsx      # Room creation with vibe & participant settings
+│   │   ├── HostLobbyScreen.tsx       # Host waiting room with AI compatibility badges
+│   │   ├── HostRoomScreen.tsx        # 3-round game from host's perspective
+│   │   ├── ParticipantRoomScreen.tsx # Participant view with live question answering
+│   │   ├── HomeScreen.tsx            # Host/Join CTAs & Date Preferences banner
+│   │   ├── RoomsScreen.tsx           # Browse real live rooms from Supabase
+│   │   ├── ChatScreen.tsx            # Real-time chat with matches
+│   │   └── ProfileScreen.tsx         # User profile & preferences showcase
 │   ├── components/
-│   │   ├── dating/                   # Editorial Hinge-inspired dating components
-│   │   │   ├── TopTabHeader.tsx      # Multi-section category tab navigation
-│   │   │   ├── PreferenceChip.tsx    # Tactile multi-select chip with checkmark
-│   │   │   ├── PreferenceChipGroup.tsx # Chip groupings with dynamic counters
-│   │   │   ├── DateCategoryCard.tsx  # Responsive pastel category cards
-│   │   │   ├── PreferenceSummaryCard.tsx # "Your date style" dynamic summary
-│   │   │   └── PrimaryCTA.tsx        # 54dp tactile plum button with safe insets
-│   │   ├── ui.tsx                    # Shared atomic UI primitives
-│   │   ├── JudgeAvatar.tsx           # Live contestant & judge avatar system
-│   │   └── BottomSheet.tsx           # Modal presentation layer
-│   ├── screens/                      # Screen views separated from routing
-│   │   ├── DateSpecialScreen.tsx     # Date Special onboarding view
-│   │   ├── DatePreferencesScreen.tsx # Interactive date preferences engine
-│   │   ├── HomeScreen.tsx            # Live room launchpad & concierge card
-│   │   ├── LocalRoomScreen.tsx       # State-machine driven speed-dating simulator
-│   │   ├── RealRoomScreen.tsx        # Multi-user WebSocket live room
-│   │   └── ProfileScreen.tsx         # User profile & date style showcase
+│   │   ├── dating/                   # Hinge-inspired dating UI components
+│   │   └── ui.tsx                    # Shared atomic UI primitives
 │   ├── hooks/
-│   │   └── useAppState.tsx           # Global state orchestrator with persistence
+│   │   └── useAppState.tsx           # Global state with host/participant room flows
+│   ├── lib/
+│   │   ├── roomActions.ts            # Supabase RPCs for room management
+│   │   ├── useRealtimeRoom.ts        # Real-time hooks for rooms, browsing & chat
+│   │   ├── supabase.ts               # Supabase client initialization
+│   │   └── sound.tsx                 # Audio & haptic feedback system
 │   ├── types/
 │   │   └── dating.ts                 # Domain models for dating preferences
-│   ├── theme.ts                      # Design tokens, color palette & typography
-│   └── lib/                          # Audio, storage, auth & Supabase client
+│   └── theme.ts                      # Design tokens, color palette & typography
 └── supabase/
-    ├── functions/generate-host-line/ # AI host edge function (Gemini 3.5 Flash)
-    └── migrations/                   # SQL schemas, triggers, and RLS policies
+    ├── functions/
+    │   ├── analyze-compatibility/     # AI compatibility scoring (Gemini 3.5 Flash)
+    │   └── generate-host-line/        # AI host commentary
+    └── migrations/
+        ├── 0001_init.sql              # Core schema: profiles, rooms, messages, RLS
+        ├── 0002_phase_engine.sql      # Room phase state machine
+        ├── 0003_host_trigger.sql      # Event notifications for AI
+        └── 0004_hosted_rooms.sql      # Hosted rooms, compatibility scores, new RPCs
 ```
 
 ---
 
 ## Design System
 
-| Token | Hex / Spec | Purpose |
-| :--- | :--- | :--- |
-| **Background** | `#FAF4F8` | Warm blush lavender-gray background |
-| **Surface** | `#FFFFFF` | Crisp card and container surface |
-| **Primary** | `#4E214E` | Signature deep plum brand accent |
-| **Primary Dark** | `#3D193D` | Active press state for primary CTAs |
+| Token | Value | Purpose |
+|:------|:------|:--------|
+| **Background** | `#FAF4F8` | Warm blush lavender-gray canvas |
+| **Surface** | `#FFFFFF` | Crisp white cards and containers |
+| **Primary** | `#4E214E` | Deep plum brand accent |
 | **Active Selection** | `#F4EBF4` | Selected chip & tab background |
-| **Active Text** | `#4E214E` | Selected chip & tab label |
-| **Inactive Border** | `#E2DAE2` | Unselected chip & control border |
-| **Inactive Text** | `#4A4A4A` | Secondary readable body typography |
-| **Editorial Serif** | `Georgia` / `serif` | High-impact headlines with editorial warmth |
-| **Touch Targets** | $\ge 44\times 44\text{dp}$ | Accessible touch geometry on all interactive elements |
+| **Border** | `#EFE8EF` | Subtle card and control borders |
+| **Editorial Serif** | `Georgia` / `serif` | High-impact editorial headlines |
+| **Touch Targets** | ≥ 44 × 44 dp | Accessible touch geometry on all controls |
 
 ---
 
 ## Quickstart
 
 ### Prerequisites
-* Node.js $\ge 18$
+* Node.js ≥ 18
 * Expo CLI (`npm install -g expo-cli`)
-* iOS Simulator (macOS / Xcode) or Android Emulator (Android Studio), or [Expo Go](https://expo.dev/go)
+* [Expo Go](https://expo.dev/go) on your phone, or iOS/Android emulator
 
 ### 1. Clone & Install
 ```bash
-git clone https://github.com/your-org/blink.git
-cd blink/blink
-npm install
+git clone https://github.com/NOBA235/Blink.git
+cd Blink/blink
+npm install --legacy-peer-deps
 ```
 
 ### 2. Configure Environment
-Create a `.env` file from `.env.example`:
 ```bash
 cp .env.example .env
 ```
@@ -175,40 +193,35 @@ EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-supabase-anon-key
 npx expo start
 ```
 
-#### Option B: Tunnel Mode (Recommended for Expo Go on different networks)
-If your physical device and development machine are on different networks, behind a firewall, or experience local connection issues in Expo Go, run with the `--tunnel` flag:
-
+#### Option B: Tunnel Mode (Recommended for Expo Go)
 ```bash
 npx expo start --tunnel
 ```
-* `@expo/ngrok` is pre-configured in `devDependencies` to handle secure tunnel connections seamlessly.
-* Scan the generated QR code with **Expo Go** (Android) or the Camera app (iOS) to test on your phone.
-* Press `w` to launch the Web app in your default browser.
-* Press `i` to open in iOS Simulator / `a` for Android Emulator.
+* `@expo/ngrok` is pre-configured in `devDependencies` for seamless tunnel connections.
+* Scan the QR code with **Expo Go** to test on your phone.
+* Press `w` for Web, `i` for iOS Simulator, `a` for Android Emulator.
 
 ---
 
-## Backend & AI Host Setup
+## Backend Setup
 
-Blink connects to a Supabase project for real-time room synchronization and user authentication.
+### 1. Apply Migrations
+Run the SQL scripts in `supabase/migrations/` sequentially in your Supabase SQL editor:
+* `0001_init.sql` — Core schema, profiles, rooms, RLS policies
+* `0002_phase_engine.sql` — Room phase state machine
+* `0003_host_trigger.sql` — Event notifications for AI host
+* `0004_hosted_rooms.sql` — Hosted rooms, compatibility scores, new RPCs
 
-1. **Apply Migrations**:
-   Run the SQL scripts in `supabase/migrations/` sequentially in your Supabase SQL editor:
-   * `0001_init.sql` — Profiles, rooms, messages, and RLS security policies.
-   * `0002_phase_engine.sql` — State machine schema for multi-round game phases.
-   * `0003_host_trigger.sql` — Real-time event notifications for the AI Host.
-
-2. **Deploy the Gemini AI Host Function**:
-   ```bash
-   supabase functions deploy generate-host-line
-   supabase secrets set GEMINI_API_KEY=your_gemini_api_key
-   ```
+### 2. Deploy Edge Functions
+```bash
+supabase functions deploy analyze-compatibility
+supabase functions deploy generate-host-line
+supabase secrets set GEMINI_API_KEY=your_gemini_api_key
+```
 
 ---
 
-## Code Quality & Verification
-
-The codebase maintains 100% strict TypeScript compliance with zero compiler errors:
+## Code Quality
 
 ```bash
 # Type check all routes, components, and hooks
@@ -219,10 +232,12 @@ npx tsc --noEmit
 
 ## Engineering Standards
 
-* **No Unnecessary Dependencies**: Built with lean, native Expo and React Native primitives.
-* **Offline-First Persistence**: Profile state and preferences sync to `@react-native-async-storage/async-storage` for instantaneous app launches.
-* **Responsive Architecture**: Percentage and flex-based layout calculations ensure flawless rendering across phones, foldables, and tablets.
-* **Accessibility**: ARIA labels, semantic roles (`button`, `tab`), and selection states baked into every custom control.
+* **Real-Time First**: All room interactions, chat, and browsing powered by Supabase Realtime WebSockets.
+* **AI-Assisted, Human-Decided**: AI provides compatibility insights; the host makes the final call.
+* **No Fake Data**: Every room, participant, match, and message is real.
+* **Strict TypeScript**: Zero `any` types. Full type safety across the codebase.
+* **Offline-First Persistence**: Profile and preferences sync to AsyncStorage for instant app launches.
+* **Responsive Design**: Flex-based layouts ensure flawless rendering across all screen sizes.
 
 ---
 

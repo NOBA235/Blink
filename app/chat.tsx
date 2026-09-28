@@ -3,14 +3,14 @@ import { ChatScreen } from "../src/screens/ChatScreen";
 import { useAppState } from "../src/hooks/useAppState";
 
 export default function Chat() {
-  const { activeChat, closeChat, sendMockMessage, myProfileId } = useAppState();
+  const { activeChat, closeChat, myProfileId } = useAppState();
   if (!activeChat) return null;
 
   return (
     <ChatScreen
       match={activeChat}
       onBack={() => { closeChat(); router.back(); }}
-      onSendMessage={sendMockMessage}
+      onSendMessage={() => {}}
       myProfileId={myProfileId}
     />
   );
