@@ -164,7 +164,7 @@ export function HomeScreen({
               router.push("/auth");
               return;
             }
-            router.push("/(tabs)/rooms");
+            router.push("/rooms");
           }}
           style={({ pressed }) => ({
             backgroundColor: "#1c1c1c",
