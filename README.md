@@ -211,8 +211,16 @@ npx expo start --tunnel
 2. Create an entitlement with identifier `premium`.
 3. Create store products `blink_premium_monthly` ($4.99/month) and `blink_premium_annual` ($29.99/year).
 4. Attach both products to the entitlement and add monthly and annual packages to the `default` offering.
-5. Set the public API keys in `src/lib/revenuecat.ts` before building a native development client. RevenueCat purchases are not available in Expo Go or web.
-6. For the hackathon demo, open Settings and use **[DEV] Simulate Premium** in a development build to exercise premium screens without a store purchase.
+5. In RevenueCat, open **Project settings → API keys**. Copy the **public SDK key** for each platform into `src/lib/revenuecat.ts`, replacing the placeholders:
+
+   ```ts
+   const RC_API_KEY_IOS = "appl_your_public_ios_sdk_key";
+   const RC_API_KEY_ANDROID = "goog_your_public_android_sdk_key";
+   ```
+
+   Use the platform-specific key. Do not use a RevenueCat secret API key in the app.
+6. Rebuild and reinstall the native development app after adding the SDK and keys. RevenueCat purchases are not available in Expo Go or web.
+7. For the hackathon demo, open Settings and use **[DEV] Simulate Premium** in a development build to exercise premium screens without a store purchase.
 
 The free tier includes five completed room visits per local calendar day and three saved matches. Room visit counts persist under `blink_room_visits` in AsyncStorage. Expo autolinks the native module; rebuild the native development client after adding the SDK.
 
