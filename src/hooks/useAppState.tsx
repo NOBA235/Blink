@@ -142,8 +142,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       // Otherwise a fast tap on Host/Join can see a null user and send a
       // returning signed-in user back through auth.
       try {
-        const { data } = await supabase.auth.getSession();
-        if (!cancelled) setSession(data.session);
+        const sessionResult = await Promise.race([
+          supabase.auth.getSession(),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000)),
+        ]);
+        if (!cancelled && sessionResult) setSession(sessionResult.data.session);
       } catch {
         // Auth errors are handled by the normal sign-in flow.
       }
