@@ -1,4 +1,4 @@
-import { View, Text, Image, Pressable, ScrollView } from "react-native";
+import { View, Text, Image, Pressable, ScrollView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ChevronRight, Mic, Users, Sparkles, Crown, Flame, Lock } from "lucide-react-native";
 import { router } from "expo-router";
@@ -31,7 +31,7 @@ export function HomeScreen({
     datePreferences?.foods?.length > 0;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={["top"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#F8F9FA" }} edges={["top"]}>
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 20,
@@ -79,9 +79,12 @@ export function HomeScreen({
           </Pressable>
         </View>
 
-        <Pressable onPress={() => triggerPaywall()} style={{ alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: theme.radius.full, backgroundColor: "#1c1c1c" }}>
-          {isPremium ? <Crown size={13} color="#ffffff" /> : <Flame size={13} color="#ffffff" />}
-          <Text style={{ color: "#ffffff", fontSize: theme.font.caption, fontWeight: "700" }}>{isPremium ? "Blink+ Active" : `${Math.max(0, 5 - roomVisitsToday)} rooms left today · Blink+`}</Text>
+        <Pressable onPress={() => triggerPaywall()} style={{ alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: theme.radius.full, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E5E7EB" }}>
+          {isPremium ? <Crown size={13} color={c.accent} /> : <Flame size={13} color={c.accent} />}
+          <Text style={{ color: "#1C1C1C", fontSize: theme.font.caption, fontWeight: "700" }}>
+            {isPremium ? "Blink+ Active" : `${Math.max(0, 5 - roomVisitsToday)} rooms left today · `}
+            {!isPremium && <Text style={{ color: c.accent }}>Blink+</Text>}
+          </Text>
         </Pressable>
 
         {/* Host a Room CTA */}
@@ -95,13 +98,20 @@ export function HomeScreen({
             router.push("/create-room");
           }}
           style={({ pressed }) => ({
-            backgroundColor: "#1c1c1c",
-            borderRadius: theme.radius.xl,
+            backgroundColor: "#FFFFFF",
+            borderRadius: 24,
             padding: 28,
+            borderWidth: 1,
+            borderColor: "#F0F1F3",
+            ...Platform.select({
+              ios: { shadowColor: "#1C1C1C", shadowOpacity: 0.08, shadowRadius: 16, shadowOffset: { width: 0, height: 6 } },
+              android: { elevation: 3 },
+              default: {},
+            }),
             opacity: pressed ? 0.92 : 1,
           })}
         >
-          {!isPremium && roomVisitsToday >= 5 && <View style={{ position: "absolute", top: 16, right: 16, flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 9, paddingVertical: 6, borderRadius: theme.radius.full, backgroundColor: c.overlay }}><Lock size={12} color={c.white} /><Text style={{ color: c.white, fontSize: theme.font.caption, fontWeight: "700" }}>Blink+ to host</Text></View>}
+          {!isPremium && roomVisitsToday >= 5 && <View style={{ position: "absolute", top: 16, right: 16, flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 9, paddingVertical: 6, borderRadius: theme.radius.full, backgroundColor: "#FFF4D6" }}><Lock size={12} color={c.accent} /><Text style={{ color: "#1C1C1C", fontSize: theme.font.caption, fontWeight: "700" }}>Blink+ to host</Text></View>}
           <View
             style={{
               flexDirection: "row",
@@ -115,16 +125,16 @@ export function HomeScreen({
                 width: 36,
                 height: 36,
                 borderRadius: 18,
-                backgroundColor: "rgba(255,255,255,0.12)",
+                backgroundColor: "rgba(212,155,75,0.14)",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <Mic size={18} color="#FFFFFF" />
+              <Mic size={18} color={c.accent} />
             </View>
             <Text
               style={{
-                color: "#ffffff",
+                color: "#6B7280",
                 fontSize: theme.font.caption,
                 fontWeight: "600",
                 textTransform: "uppercase",
@@ -136,11 +146,10 @@ export function HomeScreen({
           </View>
           <Text
             style={{
-              color: "#FFFFFF",
+              color: "#1C1C1C",
               fontSize: 26,
               fontWeight: "700",
               lineHeight: 32,
-              fontFamily: datingTheme.typography.serif,
               marginBottom: 6,
             }}
           >
@@ -148,7 +157,7 @@ export function HomeScreen({
           </Text>
           <Text
             style={{
-              color: "#ffffff",
+              color: "#6B7280",
               fontSize: theme.font.secondary,
               lineHeight: 20,
             }}
@@ -167,11 +176,16 @@ export function HomeScreen({
             router.push("/rooms");
           }}
           style={({ pressed }) => ({
-            backgroundColor: "#1c1c1c",
-            borderRadius: theme.radius.xl,
+            backgroundColor: "#FFFFFF",
+            borderRadius: 24,
             padding: 24,
             borderWidth: 1,
-            borderColor: c.border,
+            borderColor: "#F0F1F3",
+            ...Platform.select({
+              ios: { shadowColor: "#1C1C1C", shadowOpacity: 0.08, shadowRadius: 16, shadowOffset: { width: 0, height: 6 } },
+              android: { elevation: 3 },
+              default: {},
+            }),
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
@@ -187,10 +201,10 @@ export function HomeScreen({
                 marginBottom: 8,
               }}
             >
-              <Users size={16} color="#ffffff" />
+              <Users size={16} color={c.accent} />
               <Text
                 style={{
-                  color: "#ffffff",
+                  color: c.accent,
                   fontSize: theme.font.caption,
                   fontWeight: "700",
                   textTransform: "uppercase",
@@ -202,7 +216,7 @@ export function HomeScreen({
             </View>
             <Text
               style={{
-                color: "#ffffff",
+                color: "#1C1C1C",
                 fontSize: 18,
                 fontWeight: "700",
                 marginBottom: 4,
@@ -212,7 +226,7 @@ export function HomeScreen({
             </Text>
             <Text
               style={{
-                color: "#ffffff",
+                color: "#6B7280",
                 fontSize: theme.font.secondary,
                 lineHeight: 20,
               }}
@@ -225,12 +239,12 @@ export function HomeScreen({
               width: 42,
               height: 42,
               borderRadius: 21,
-              backgroundColor: "rgba(255,255,255,0.12)",
+              backgroundColor: c.accent,
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <ChevronRight size={18} color="#ffffff" />
+            <ChevronRight size={18} color="#FFFFFF" />
           </View>
         </Pressable>
 
