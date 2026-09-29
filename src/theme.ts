@@ -18,6 +18,8 @@ export const theme = {
     primaryPress: "#3D193D",
     primarySoft: "rgba(78, 33, 78, 0.12)",
     accent: "#D49B4B",
+    accentSoft: "rgba(212, 155, 75, 0.16)",
+    overlay: "rgba(15, 10, 18, 0.72)",
     success: "#2E7D59",
     successSoft: "rgba(46, 125, 89, 0.12)",
     danger: "#C84B4B",
@@ -114,4 +116,3 @@ export const datingTheme = {
 
 export type DatingTheme = typeof datingTheme;
 export type Theme = typeof theme;
-

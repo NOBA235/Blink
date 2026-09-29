@@ -4,6 +4,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { AppStateProvider, useAppState } from "../src/hooks/useAppState";
 import { SoundProvider } from "../src/lib/sound";
+import { PremiumProvider } from "../src/hooks/usePremium";
 
 // Keeps the native splash screen up until the app's own boot logic
 // (restoring a saved local session from AsyncStorage) has resolved —
@@ -36,11 +37,13 @@ function RootNavigator() {
 
 export default function RootLayout() {
   return (
-    <AppStateProvider>
-      <SoundProvider>
-        <StatusBar style="light" />
-        <RootNavigator />
-      </SoundProvider>
-    </AppStateProvider>
+    <PremiumProvider>
+      <AppStateProvider>
+        <SoundProvider>
+          <StatusBar style="light" />
+          <RootNavigator />
+        </SoundProvider>
+      </AppStateProvider>
+    </PremiumProvider>
   );
 }

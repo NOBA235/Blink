@@ -43,7 +43,7 @@ export function LocalRoomScreen({
   contestant: Contestant;
   userPhoto: string;
   soundEnabled: boolean;
-  onExit: (result: { matched: boolean; contestant: Contestant; nextRoom?: boolean; openChat?: boolean }) => void;
+  onExit: (result: { matched: boolean; contestant: Contestant; nextRoom?: boolean; openChat?: boolean; completed?: boolean }) => void;
 }) {
   const { playSound } = useSound();
   const [phase, setPhase] = useState("connecting");
@@ -350,8 +350,8 @@ export function LocalRoomScreen({
                 You and {contestant.name} picked each other.
               </Text>
               <View style={{ width: "100%", maxWidth: 280, gap: 10, marginTop: 4 }}>
-                <PrimaryButton onPress={() => onExit({ matched: true, contestant, openChat: true })}>Start talking</PrimaryButton>
-                <SecondaryButton onPress={() => onExit({ matched: true, contestant, nextRoom: true })}>Keep playing</SecondaryButton>
+                <PrimaryButton onPress={() => onExit({ matched: true, contestant, openChat: true, completed: true })}>Start talking</PrimaryButton>
+                <SecondaryButton onPress={() => onExit({ matched: true, contestant, nextRoom: true, completed: true })}>Keep playing</SecondaryButton>
               </View>
             </View>
           ) : (
@@ -363,7 +363,7 @@ export function LocalRoomScreen({
               <Text style={{ color: c.text2, fontSize: theme.font.secondary, textAlign: "center", maxWidth: 260 }}>
                 {finalPickJudge && !finalPickJudge.isUser ? `${contestant.name} picked ${finalPickJudge.name} tonight.` : `${contestant.name} didn't pick anyone tonight.`} On to the next room.
               </Text>
-              <PrimaryButton onPress={() => onExit({ matched: false, contestant, nextRoom: true })} style={{ width: "100%", maxWidth: 260, marginTop: 8 }}>
+              <PrimaryButton onPress={() => onExit({ matched: false, contestant, nextRoom: true, completed: true })} style={{ width: "100%", maxWidth: 260, marginTop: 8 }}>
                 Enter next room
               </PrimaryButton>
             </View>
@@ -380,7 +380,7 @@ export function LocalRoomScreen({
               You passed on {contestant.name}. The room keeps going without you tonight.
             </Text>
             <View style={{ width: "100%", maxWidth: 260, gap: 10, marginTop: 8 }}>
-              <PrimaryButton onPress={() => onExit({ matched: false, contestant, nextRoom: true })}>Enter next room</PrimaryButton>
+              <PrimaryButton onPress={() => onExit({ matched: false, contestant, nextRoom: true, completed: true })}>Enter next room</PrimaryButton>
               <SecondaryButton onPress={() => onExit({ matched: false, contestant })}>Back to home</SecondaryButton>
             </View>
           </View>

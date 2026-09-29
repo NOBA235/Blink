@@ -1,9 +1,10 @@
 import { View, Text, Image, Pressable, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ChevronRight, Mic, Users, Sparkles } from "lucide-react-native";
+import { ChevronRight, Mic, Users, Sparkles, Crown, Flame, Lock } from "lucide-react-native";
 import { router } from "expo-router";
 import { theme, datingTheme } from "../theme";
 import { useAppState } from "../hooks/useAppState";
+import { usePremium } from "../hooks/usePremium";
 
 const c = theme.color;
 const dt = datingTheme.color;
@@ -11,11 +12,18 @@ const dt = datingTheme.color;
 export function HomeScreen({
   onOpenProfile,
   profileCompletion,
+  roomsAvailable: _roomsAvailable,
+  onEnterRoom: _onEnterRoom,
+  onOpenRooms: _onOpenRooms,
 }: {
   onOpenProfile: () => void;
   profileCompletion: number;
+  roomsAvailable?: number;
+  onEnterRoom?: () => void;
+  onOpenRooms?: () => void;
 }) {
   const { profile, datePreferences, myProfileId } = useAppState();
+  const { isPremium, roomVisitsToday, triggerPaywall } = usePremium();
   if (!profile) return null;
 
   const hasPreferences =
@@ -71,9 +79,15 @@ export function HomeScreen({
           </Pressable>
         </View>
 
+        <Pressable onPress={() => triggerPaywall()} style={{ alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: theme.radius.full, backgroundColor: isPremium ? c.accentSoft : c.surface2 }}>
+          {isPremium ? <Crown size={13} color={c.accent} /> : <Flame size={13} color={c.primary} />}
+          <Text style={{ color: isPremium ? c.accent : c.text2, fontSize: theme.font.caption, fontWeight: "700" }}>{isPremium ? "Blink+ Active" : `${Math.max(0, 5 - roomVisitsToday)} rooms left today · Blink+`}</Text>
+        </Pressable>
+
         {/* Host a Room CTA */}
         <Pressable
           onPress={() => {
+            if (!isPremium && roomVisitsToday >= 5) { triggerPaywall(); return; }
             if (!myProfileId) {
               router.push("/auth");
               return;
@@ -87,6 +101,7 @@ export function HomeScreen({
             opacity: pressed ? 0.92 : 1,
           })}
         >
+          {!isPremium && roomVisitsToday >= 5 && <View style={{ position: "absolute", top: 16, right: 16, flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 9, paddingVertical: 6, borderRadius: theme.radius.full, backgroundColor: c.overlay }}><Lock size={12} color={c.white} /><Text style={{ color: c.white, fontSize: theme.font.caption, fontWeight: "700" }}>Blink+ to host</Text></View>}
           <View
             style={{
               flexDirection: "row",

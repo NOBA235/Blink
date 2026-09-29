@@ -11,6 +11,7 @@ import {
   type DatePreferencesState,
   DEFAULT_DATE_PREFERENCES,
 } from "../types/dating";
+import { usePremium } from "./usePremium";
 
 const STORAGE_KEY = "pop-state";
 
@@ -81,7 +82,7 @@ type AppStateValue = {
   enterLocalRoom: (contestant?: Contestant) => void;
   attemptRealRoom: () => Promise<void>;
   cancelMatchmaking: () => void;
-  handleLocalRoomExit: (result: { matched: boolean; contestant: Contestant; nextRoom?: boolean; openChat?: boolean }) => void;
+  handleLocalRoomExit: (result: { matched: boolean; contestant: Contestant; nextRoom?: boolean; openChat?: boolean; completed?: boolean }) => boolean;
   handleRealRoomExit: (result: { matched: boolean; matchId?: string; otherProfile?: any }) => void;
   openChat: (matchId: string) => void;
   closeChat: () => void;
@@ -91,6 +92,7 @@ type AppStateValue = {
 const AppStateContext = createContext<AppStateValue | null>(null);
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
+  const premium = usePremium();
   const [booting, setBooting] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<LocalProfile | null>(null);
@@ -102,10 +104,17 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [activeRealRoomId, setActiveRealRoomId] = useState<string | null>(null);
   const [queueWaiting, setQueueWaiting] = useState(false);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [pendingPremiumMatch, setPendingPremiumMatch] = useState<LocalMatch | null>(null);
   const hasRestored = useRef(false);
   const queueTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const myProfileId = session?.user?.id || null;
+
+  useEffect(() => {
+    if (!premium.isPremium || !pendingPremiumMatch) return;
+    setMatches((current) => current.some((match) => match.id === pendingPremiumMatch.id) ? current : [...current, pendingPremiumMatch]);
+    setPendingPremiumMatch(null);
+  }, [premium.isPremium, pendingPremiumMatch]);
 
   useEffect(() => onAuthChange(setSession), []);
 
@@ -234,6 +243,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   }
 
   function enterLocalRoom(contestant?: Contestant) {
+    if (!premium.canEnterRoom()) { premium.triggerPaywall(); return; }
     setActiveRoomContestant(contestant || nextContestant());
   }
 
@@ -241,6 +251,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   // falls back to the local simulation rather than leaving the player
   // stuck in an empty queue. Mirrors the web app's attemptRealRoom exactly.
   async function attemptRealRoom() {
+    if (!premium.canEnterRoom()) { premium.triggerPaywall(); return; }
     if (!myProfileId) { enterLocalRoom(); return; }
     setQueueWaiting(true);
     let immediateRoomId: string | null = null;
@@ -272,31 +283,45 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     leaveQueue().catch(() => {});
   }
 
-  function handleLocalRoomExit(result: { matched: boolean; contestant: Contestant; nextRoom?: boolean; openChat?: boolean }) {
+  function handleLocalRoomExit(result: { matched: boolean; contestant: Contestant; nextRoom?: boolean; openChat?: boolean; completed?: boolean }): boolean {
+    if (result.completed) premium.recordRoomVisit();
     setPlayedIds((ids) => (ids.includes(result.contestant.id) ? ids : [...ids, result.contestant.id]));
+    let saved = false;
     if (result.matched) {
       const match: LocalMatch = { id: `${result.contestant.id}-${Date.now()}`, contestant: result.contestant, messages: [] };
-      setMatches((m) => [...m, match]);
-      if (result.openChat) setActiveChatId(match.id);
+      if (premium.canSaveMoreMatches(matches.length)) {
+        saved = true;
+        setMatches((m) => [...m, match]);
+      } else {
+        setPendingPremiumMatch(match);
+        premium.triggerPaywall("It's a match! Upgrade Blink+ to keep this match.");
+      }
+      if (result.openChat && saved) setActiveChatId(match.id);
     }
     if (result.nextRoom) {
       setActiveRoomContestant(nextContestant(result.contestant.id));
     } else {
       setActiveRoomContestant(null);
     }
+    return saved;
   }
 
   function handleRealRoomExit(result: { matched: boolean; matchId?: string; otherProfile?: any }) {
+    premium.recordRoomVisit();
     setActiveRealRoomId(null);
-    if (result.matched && result.matchId) {
+    if (result.matched && result.matchId && premium.canSaveMoreMatches(matches.length)) {
       const match: LocalMatch = {
         id: result.matchId,
         contestant: { name: result.otherProfile?.name, photo: result.otherProfile?.photo_url },
         messages: [],
         isReal: true,
       };
-      setMatches((m) => [...m, match]);
-      setActiveChatId(match.id);
+      setMatches((m) => {
+        setActiveChatId(match.id); return [...m, match];
+      });
+    } else if (result.matched && !premium.canSaveMoreMatches(matches.length)) {
+      setPendingPremiumMatch({ id: result.matchId || `real-${Date.now()}`, contestant: { name: result.otherProfile?.name, photo: result.otherProfile?.photo_url }, messages: [], isReal: true });
+      premium.triggerPaywall("It's a match! Upgrade Blink+ to keep this match.");
     }
   }
 

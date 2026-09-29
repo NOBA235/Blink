@@ -27,7 +27,7 @@ export default function Room() {
         myProfileId={myProfileId}
         myPhoto={profile.photo}
         soundEnabled={soundEnabled}
-        onExit={(result) => {
+        onExit={(result: { matched: boolean; matchId?: string; otherProfile?: any }) => {
           handleRealRoomExit(result);
           if (result.matched) router.replace("/chat");
           else router.back();
@@ -43,8 +43,8 @@ export default function Room() {
         userPhoto={profile.photo}
         soundEnabled={soundEnabled}
         onExit={(result) => {
-          handleLocalRoomExit(result);
-          if (result.openChat) router.replace("/chat");
+          const saved = handleLocalRoomExit(result);
+          if (result.openChat && saved) router.replace("/chat");
           else if (!result.nextRoom) router.back();
           // else: nextRoom — stay on this route, a new contestant is now active
         }}

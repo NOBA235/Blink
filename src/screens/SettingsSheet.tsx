@@ -5,16 +5,19 @@ import { theme } from "../theme";
 import { BottomSheet } from "../components/BottomSheet";
 import { SecondaryButton } from "../components/ui";
 import { useAppState } from "../hooks/useAppState";
+import { usePremium } from "../hooks/usePremium";
 
 const c = theme.color;
 
 export function SettingsSheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const { soundEnabled, toggleSound, resetEverything, signOut, myProfileId } = useAppState();
+  const { devOverride, setDevOverride } = usePremium();
   const [confirmingReset, setConfirmingReset] = useState(false);
 
   return (
     <BottomSheet visible={visible} onClose={() => { setConfirmingReset(false); onClose(); }} title="Settings">
       <View style={{ gap: 24 }}>
+        {__DEV__ && <View><Text style={styles.sectionLabel}>Developer</Text><View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 12 }}><Text style={{ flex: 1, color: c.text, fontSize: theme.font.secondary, fontWeight: "500" }}>[DEV] Simulate Premium</Text><Switch value={devOverride} onValueChange={setDevOverride} trackColor={{ true: c.primary, false: c.surface3 }} thumbColor={c.white} /></View></View>}
         <View>
           <Text style={styles.sectionLabel}>Preferences</Text>
           <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 12 }}>

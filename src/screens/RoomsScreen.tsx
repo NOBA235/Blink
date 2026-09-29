@@ -6,6 +6,7 @@ import { Users } from "lucide-react-native";
 import { theme } from "../theme";
 import { EmptyState } from "../components/ui";
 import type { Contestant } from "../data/contestants";
+import { usePremium } from "../hooks/usePremium";
 
 const c = theme.color;
 const ROOM_LABELS = ["Live now", "Starting soon", "New tonight", "Popular room"];
@@ -13,6 +14,7 @@ const ROOM_LABELS = ["Live now", "Starting soon", "New tonight", "Popular room"]
 export function RoomsScreen({
   contestants, onEnterRoom, onRefreshPool,
 }: { contestants: Contestant[]; onEnterRoom: (c: Contestant) => void; onRefreshPool: () => void }) {
+  const { isPremium, triggerPaywall } = usePremium();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={["top"]}>
       <Text style={{ color: c.text, fontSize: theme.font.h1, fontWeight: "700", paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8 }}>
@@ -31,7 +33,7 @@ export function RoomsScreen({
           {contestants.map((contestant, i) => (
             <Pressable
               key={contestant.id}
-              onPress={() => onEnterRoom(contestant)}
+              onPress={() => { if (!isPremium && i > 0) { triggerPaywall(); return; } onEnterRoom(contestant); }}
               style={{ borderRadius: theme.radius.xl, overflow: "hidden", aspectRatio: 16 / 10 }}
             >
               <Image source={{ uri: contestant.photo }} style={{ width: "100%", height: "100%" }} blurRadius={18} />
@@ -45,6 +47,9 @@ export function RoomsScreen({
                 <Text style={{ color: c.white, fontSize: theme.font.caption, fontWeight: "700" }}>
                   {ROOM_LABELS[i % ROOM_LABELS.length]}
                 </Text>
+              </View>
+              <View style={{ position: "absolute", top: 12, right: 12, borderRadius: theme.radius.full, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: isPremium ? c.accent : c.overlay }}>
+                <Text style={{ color: c.white, fontSize: theme.font.caption, fontWeight: "700" }}>{isPremium ? `${60 + (Array.from(contestant.id).reduce((n, ch) => n + ch.charCodeAt(0), 0) % 36)}% Vibe Match` : i > 0 ? "?? % Match · 🔒" : "Basic Vibe Match"}</Text>
               </View>
               <View style={{ position: "absolute", left: 20, right: 20, bottom: 20 }}>
                 <Text style={{ color: c.white, fontSize: theme.font.h2, fontWeight: "700", marginBottom: 4 }}>

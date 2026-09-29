@@ -3,16 +3,18 @@ import { View, Text, Image, Pressable, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from "expo-image-picker";
-import { Camera, EyeOff, ChevronRight, Info, Settings as SettingsIcon, Sparkles } from "lucide-react-native";
+import { Camera, EyeOff, ChevronRight, Info, Settings as SettingsIcon, Sparkles, Crown } from "lucide-react-native";
 import { router } from "expo-router";
 import { theme } from "../theme";
 import { Chip, IconButton } from "../components/ui";
 import { useAppState } from "../hooks/useAppState";
+import { usePremium } from "../hooks/usePremium";
 
 const c = theme.color;
 
 export function ProfileScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
   const { profile, updatePhoto, datePreferences } = useAppState();
+  const { isPremium, triggerPaywall } = usePremium();
   const [showReveal, setShowReveal] = useState(false);
   if (!profile) return null;
 
@@ -34,6 +36,11 @@ export function ProfileScreen({ onOpenSettings }: { onOpenSettings: () => void }
       </View>
 
       <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32, gap: 24 }}>
+        <Pressable onPress={() => triggerPaywall()} style={{ padding: 16, borderRadius: theme.radius.lg, backgroundColor: isPremium ? c.successSoft : c.primary, flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <Crown size={20} color={isPremium ? c.success : c.accent} />
+          <Text style={{ flex: 1, color: isPremium ? c.success : c.white, fontSize: theme.font.secondary, fontWeight: "700" }}>{isPremium ? "Blink+ Active ✓ · Visibility boosted" : "Upgrade to Blink+"}</Text>
+          {!isPremium && <Text style={{ color: c.white, fontWeight: "700" }}>See Plans</Text>}
+        </Pressable>
         <View style={{ borderRadius: theme.radius.xl, overflow: "hidden", aspectRatio: 4 / 5, backgroundColor: c.surface2 }}>
           <Image source={{ uri: profile.photo }} style={{ width: "100%", height: "100%" }} />
           <LinearGradient colors={["transparent", "rgba(0,0,0,0.85)"]} style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "55%" }} />

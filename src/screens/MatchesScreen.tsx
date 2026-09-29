@@ -4,12 +4,14 @@ import { Heart } from "lucide-react-native";
 import { theme } from "../theme";
 import { EmptyState } from "../components/ui";
 import type { LocalMatch } from "../hooks/useAppState";
+import { usePremium } from "../hooks/usePremium";
 
 const c = theme.color;
 
 export function MatchesScreen({
   matches, onOpenChat, onEnterRoom,
 }: { matches: LocalMatch[]; onOpenChat: (m: LocalMatch) => void; onEnterRoom: () => void }) {
+  const { isPremium, triggerPaywall } = usePremium();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={["top"]}>
       <Text style={{ color: c.text, fontSize: theme.font.h1, fontWeight: "700", paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8 }}>
@@ -43,6 +45,7 @@ export function MatchesScreen({
               {m.messages.length === 0 && <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: c.primary }} />}
             </Pressable>
           )}
+          ListFooterComponent={!isPremium && matches.length >= 3 ? <Pressable onPress={() => triggerPaywall()} style={{ marginTop: 18, padding: 16, borderRadius: theme.radius.lg, backgroundColor: c.primarySoft }}><Text style={{ color: c.primary, fontWeight: "700" }}>Upgrade to save more matches</Text></Pressable> : null}
         />
       )}
     </SafeAreaView>
