@@ -138,6 +138,15 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       } catch {
         restored = null;
       }
+      // Resolve Supabase's persisted session before exposing the home screen.
+      // Otherwise a fast tap on Host/Join can see a null user and send a
+      // returning signed-in user back through auth.
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!cancelled) setSession(data.session);
+      } catch {
+        // Auth errors are handled by the normal sign-in flow.
+      }
       await minSplash;
       if (cancelled) return;
       if (restored?.profile) {
@@ -206,7 +215,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   // account still needs Onboarding, or already has a full profile.
   async function afterAuth(): Promise<"onboarding" | "app"> {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return "onboarding";
+    if (!user) throw new Error("Your session could not be restored. Please sign in again.");
     const { data: row } = await supabase.from("profiles").select("*").eq("id", user.id).single();
     if (profileNeedsOnboarding(row)) return "onboarding";
     setProfile(supabaseProfileToLocal(row));

@@ -23,10 +23,17 @@ export function AuthScreen() {
     setError(null);
     setBusy(true);
     try {
+      let authResult;
       if (mode === "signup") {
-        await signUp(email.trim(), password, name.trim() || "New player");
+        authResult = await signUp(email.trim(), password, name.trim() || "New player");
       } else {
-        await signIn(email.trim(), password);
+        authResult = await signIn(email.trim(), password);
+      }
+      // Supabase returns a user without a session when email confirmation is
+      // enabled. Don't send that user into onboarding as if they're signed in.
+      if (!authResult.session) {
+        setError("Check your email to confirm your account, then come back and sign in.");
+        return;
       }
       const dest = await afterAuth();
       router.replace(dest === "onboarding" ? "/onboarding" : "/(tabs)/home");
