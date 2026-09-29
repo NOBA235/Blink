@@ -79,9 +79,9 @@ export function HomeScreen({
           </Pressable>
         </View>
 
-        <Pressable onPress={() => triggerPaywall()} style={{ alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: theme.radius.full, backgroundColor: isPremium ? c.accentSoft : c.surface2 }}>
-          {isPremium ? <Crown size={13} color={c.accent} /> : <Flame size={13} color={c.primary} />}
-          <Text style={{ color: isPremium ? c.accent : c.text2, fontSize: theme.font.caption, fontWeight: "700" }}>{isPremium ? "Blink+ Active" : `${Math.max(0, 5 - roomVisitsToday)} rooms left today · Blink+`}</Text>
+        <Pressable onPress={() => triggerPaywall()} style={{ alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: theme.radius.full, backgroundColor: "#1c1c1c" }}>
+          {isPremium ? <Crown size={13} color="#ffffff" /> : <Flame size={13} color="#ffffff" />}
+          <Text style={{ color: "#ffffff", fontSize: theme.font.caption, fontWeight: "700" }}>{isPremium ? "Blink+ Active" : `${Math.max(0, 5 - roomVisitsToday)} rooms left today · Blink+`}</Text>
         </Pressable>
 
         {/* Host a Room CTA */}
@@ -95,7 +95,7 @@ export function HomeScreen({
             router.push("/create-room");
           }}
           style={({ pressed }) => ({
-            backgroundColor: "#4E214E",
+            backgroundColor: "#1c1c1c",
             borderRadius: theme.radius.xl,
             padding: 28,
             opacity: pressed ? 0.92 : 1,
@@ -115,7 +115,7 @@ export function HomeScreen({
                 width: 36,
                 height: 36,
                 borderRadius: 18,
-                backgroundColor: "rgba(255,255,255,0.2)",
+                backgroundColor: "rgba(255,255,255,0.12)",
                 alignItems: "center",
                 justifyContent: "center",
               }}
@@ -124,7 +124,7 @@ export function HomeScreen({
             </View>
             <Text
               style={{
-                color: "rgba(255,255,255,0.7)",
+                color: "#ffffff",
                 fontSize: theme.font.caption,
                 fontWeight: "600",
                 textTransform: "uppercase",
@@ -148,7 +148,7 @@ export function HomeScreen({
           </Text>
           <Text
             style={{
-              color: "rgba(255,255,255,0.75)",
+              color: "#ffffff",
               fontSize: theme.font.secondary,
               lineHeight: 20,
             }}
@@ -167,7 +167,7 @@ export function HomeScreen({
             router.push("/(tabs)/rooms");
           }}
           style={({ pressed }) => ({
-            backgroundColor: c.surface,
+            backgroundColor: "#1c1c1c",
             borderRadius: theme.radius.xl,
             padding: 24,
             borderWidth: 1,
@@ -175,7 +175,7 @@ export function HomeScreen({
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
-            opacity: pressed ? 0.92 : 1,
+            opacity: pressed ? 0.85 : 1,
           })}
         >
           <View style={{ flex: 1, paddingRight: 14 }}>
@@ -187,10 +187,10 @@ export function HomeScreen({
                 marginBottom: 8,
               }}
             >
-              <Users size={16} color={dt.primary} />
+              <Users size={16} color="#ffffff" />
               <Text
                 style={{
-                  color: dt.primary,
+                  color: "#ffffff",
                   fontSize: theme.font.caption,
                   fontWeight: "700",
                   textTransform: "uppercase",
@@ -202,7 +202,7 @@ export function HomeScreen({
             </View>
             <Text
               style={{
-                color: c.text,
+                color: "#ffffff",
                 fontSize: 18,
                 fontWeight: "700",
                 marginBottom: 4,
@@ -212,7 +212,7 @@ export function HomeScreen({
             </Text>
             <Text
               style={{
-                color: c.text2,
+                color: "#ffffff",
                 fontSize: theme.font.secondary,
                 lineHeight: 20,
               }}
@@ -225,12 +225,12 @@ export function HomeScreen({
               width: 42,
               height: 42,
               borderRadius: 21,
-              backgroundColor: dt.activeBackground,
+              backgroundColor: "rgba(255,255,255,0.12)",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <ChevronRight size={18} color={dt.primary} />
+            <ChevronRight size={18} color="#ffffff" />
           </View>
         </Pressable>
 
@@ -246,7 +246,7 @@ export function HomeScreen({
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
-            opacity: pressed ? 0.92 : 1,
+            opacity: pressed ? 0.85 : 1,
           })}
         >
           <View style={{ flex: 1, paddingRight: 14 }}>

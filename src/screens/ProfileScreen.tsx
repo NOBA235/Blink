@@ -36,10 +36,10 @@ export function ProfileScreen({ onOpenSettings }: { onOpenSettings: () => void }
       </View>
 
       <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32, gap: 24 }}>
-        <Pressable onPress={() => triggerPaywall()} style={{ padding: 16, borderRadius: theme.radius.lg, backgroundColor: isPremium ? c.successSoft : c.primary, flexDirection: "row", alignItems: "center", gap: 12 }}>
-          <Crown size={20} color={isPremium ? c.success : c.accent} />
-          <Text style={{ flex: 1, color: isPremium ? c.success : c.white, fontSize: theme.font.secondary, fontWeight: "700" }}>{isPremium ? "Blink+ Active ✓ · Visibility boosted" : "Upgrade to Blink+"}</Text>
-          {!isPremium && <Text style={{ color: c.white, fontWeight: "700" }}>See Plans</Text>}
+        <Pressable onPress={() => triggerPaywall()} style={{ padding: 16, borderRadius: theme.radius.lg, backgroundColor: "#1c1c1c", flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <Crown size={20} color="#ffffff" />
+          <Text style={{ flex: 1, color: "#ffffff", fontSize: theme.font.secondary, fontWeight: "700" }}>{isPremium ? "Blink+ Active ✓ · Visibility boosted" : "Upgrade to Blink+"}</Text>
+          {!isPremium && <Text style={{ color: "#ffffff", fontWeight: "700" }}>See Plans</Text>}
         </Pressable>
         <View style={{ borderRadius: theme.radius.xl, overflow: "hidden", aspectRatio: 4 / 5, backgroundColor: c.surface2 }}>
           <Image source={{ uri: profile.photo }} style={{ width: "100%", height: "100%" }} />
@@ -48,8 +48,8 @@ export function ProfileScreen({ onOpenSettings }: { onOpenSettings: () => void }
             <Text style={{ color: c.white, fontSize: 24, fontWeight: "700" }}>{profile.name}, {profile.age}</Text>
             <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: theme.font.secondary }}>{profile.location}</Text>
           </View>
-          <Pressable onPress={changePhoto} style={{ position: "absolute", top: 16, right: 16, width: 38, height: 38, borderRadius: 19, backgroundColor: c.primary, alignItems: "center", justifyContent: "center" }}>
-            <Camera size={16} color={c.white} />
+          <Pressable onPress={changePhoto} style={{ position: "absolute", top: 16, right: 16, width: 38, height: 38, borderRadius: 19, backgroundColor: "#1c1c1c", alignItems: "center", justifyContent: "center" }}>
+            <Camera size={16} color="#ffffff" />
           </Pressable>
         </View>
 

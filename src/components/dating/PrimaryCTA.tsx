@@ -119,14 +119,14 @@ const styles = StyleSheet.create({
   ctaButton: {
     height: datingTheme.geometry.ctaHeight,
     borderRadius: datingTheme.geometry.ctaRadius,
-    backgroundColor: datingTheme.color.primary,
+    backgroundColor: "#1c1c1c",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 24,
     minHeight: datingTheme.geometry.minTouchTarget,
     ...Platform.select({
       ios: {
-        shadowColor: datingTheme.color.primary,
+        shadowColor: "#1c1c1c",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.18,
         shadowRadius: 10,
@@ -137,7 +137,8 @@ const styles = StyleSheet.create({
     }),
   },
   ctaButtonPressed: {
-    backgroundColor: datingTheme.color.primaryDark,
+    backgroundColor: "#1c1c1c",
+    opacity: 0.85,
   },
   ctaButtonDisabled: {
     opacity: 0.45,

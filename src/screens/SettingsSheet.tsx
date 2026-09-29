@@ -61,8 +61,8 @@ export function SettingsSheet({ visible, onClose }: { visible: boolean; onClose:
               </Text>
               <View style={{ flexDirection: "row", gap: 8 }}>
                 <SecondaryButton onPress={() => setConfirmingReset(false)} style={{ flex: 1, paddingVertical: 12 }}>Cancel</SecondaryButton>
-                <Pressable onPress={resetEverything} style={{ flex: 1, backgroundColor: c.danger, borderRadius: theme.radius.md, alignItems: "center", justifyContent: "center" }}>
-                  <Text style={{ color: c.white, fontSize: theme.font.secondary, fontWeight: "600" }}>Confirm</Text>
+                <Pressable onPress={resetEverything} style={{ flex: 1, backgroundColor: "#1c1c1c", borderRadius: theme.radius.md, alignItems: "center", justifyContent: "center" }}>
+                  <Text style={{ color: "#ffffff", fontSize: theme.font.secondary, fontWeight: "600" }}>Confirm</Text>
                 </Pressable>
               </View>
             </View>

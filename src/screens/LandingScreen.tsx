@@ -54,7 +54,7 @@ const profiles = [
   { x: 17, y: 76, s: 56 }, { x: 43, y: 77, s: 64 }, { x: 67, y: 80, s: 50 }, { x: 43, y: 0, s: 48 },
 ];
 
-function FloatingPortrait({ index, size, left, top }: { index: number; size: number; left: string; top: string }) {
+function FloatingPortrait({ index, size, left, top }: { index: number; size: number; left: `${number}%`; top: `${number}%` }) {
   const lift = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     const animation = Animated.loop(Animated.sequence([
@@ -77,7 +77,12 @@ export function LandingScreen() {
   const { width, height } = useWindowDimensions();
   const avatarSize = Math.min(94, Math.max(42, width * 0.235));
   const compact = height < 740;
-  const layout = useMemo(() => profiles.map((p) => ({ ...p, size: p.s / 96 * avatarSize, left: `${p.x}%`, top: `${p.y}%` })), [avatarSize]);
+  const layout = useMemo(() => profiles.map((p) => ({
+    ...p,
+    size: p.s / 96 * avatarSize,
+    left: `${p.x}%` as `${number}%`,
+    top: `${p.y}%` as `${number}%`,
+  })), [avatarSize]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#FBF8F2" }}>
@@ -110,11 +115,11 @@ export function LandingScreen() {
         </View>
 
         <View style={{ width: "100%", gap: 4, paddingTop: compact ? 14 : 20, paddingBottom: 2 }}>
-          <PrimaryButton onPress={() => router.push("/auth")} style={{ width: "100%", minHeight: 56, borderRadius: 18, backgroundColor: c.primary }}>
-            <Text style={{ color: c.white, fontSize: 16, fontWeight: "700" }}>Get Started</Text>
+          <PrimaryButton onPress={() => router.push("/auth")} style={{ width: "100%", minHeight: 56, borderRadius: 18, backgroundColor: "#1c1c1c" }}>
+            <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "700" }}>Get Started</Text>
           </PrimaryButton>
           <Pressable onPress={() => router.push("/date-special")} style={({ pressed }) => ({ minHeight: 44, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}>
-            <Text style={{ color: c.text2, fontSize: 14, fontWeight: "600" }}>Explore Blink</Text>
+            <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "600" }}>Explore Blink</Text>
           </Pressable>
         </View>
       </View>

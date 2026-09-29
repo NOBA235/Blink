@@ -13,14 +13,14 @@ export function PrimaryButton({
       disabled={disabled}
       style={({ pressed }) => [
         styles.btnBase,
-        { backgroundColor: c.primary },
-        pressed && !disabled && { backgroundColor: c.primaryPress },
+        { backgroundColor: "#1c1c1c" },
+        pressed && !disabled && { opacity: 0.85 },
         disabled && { opacity: 0.4 },
         style,
       ]}
     >
       {typeof children === "string" ? (
-        <Text style={[styles.btnText, { color: c.white }, textStyle]}>{children}</Text>
+        <Text style={[styles.btnText, { color: "#ffffff" }, textStyle]}>{children}</Text>
       ) : children}
     </Pressable>
   );
@@ -35,13 +35,13 @@ export function SecondaryButton({
       disabled={disabled}
       style={({ pressed }) => [
         styles.btnBase,
-        { backgroundColor: c.surface2, borderWidth: 1, borderColor: c.borderStrong },
-        pressed && !disabled && { backgroundColor: c.surface3 },
+        { backgroundColor: "#1c1c1c" },
+        pressed && !disabled && { opacity: 0.85 },
         disabled && { opacity: 0.4 },
         style,
       ]}
     >
-      {typeof children === "string" ? <Text style={[styles.btnText, { color: c.text }]}>{children}</Text> : children}
+      {typeof children === "string" ? <Text style={[styles.btnText, { color: "#ffffff" }]}>{children}</Text> : children}
     </Pressable>
   );
 }
@@ -49,7 +49,7 @@ export function SecondaryButton({
 export function GhostButton({ children, onPress, style }: { children: ReactNode; onPress?: () => void; style?: StyleProp<ViewStyle> }) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [{ padding: theme.space.sm }, pressed && { opacity: 0.6 }, style]}>
-      <Text style={{ color: c.text2, fontSize: theme.font.secondary, fontWeight: "500", textAlign: "center" }}>{children}</Text>
+      <Text style={{ color: "#ffffff", fontSize: theme.font.secondary, fontWeight: "500", textAlign: "center" }}>{children}</Text>
     </Pressable>
   );
 }

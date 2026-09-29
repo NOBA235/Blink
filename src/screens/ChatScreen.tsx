@@ -83,8 +83,8 @@ export function ChatScreen({
             onChangeText={setDraft}
             onSubmitEditing={send}
           />
-          <Pressable onPress={send} style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: c.primary, alignItems: "center", justifyContent: "center" }}>
-            <Send size={16} color={c.white} />
+          <Pressable onPress={send} style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: "#1c1c1c", alignItems: "center", justifyContent: "center" }}>
+            <Send size={16} color="#ffffff" />
           </Pressable>
         </View>
       </KeyboardAvoidingView>

@@ -199,16 +199,16 @@ export function LocalRoomScreen({
     return (
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 24 }}>
         <View style={{ alignItems: "center", gap: 8 }}>
-          <Pressable onPress={() => handleUserDecision(true)} style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: c.surface2, borderWidth: 1, borderColor: c.border, alignItems: "center", justifyContent: "center" }}>
-            <X size={24} color={c.text2} />
+          <Pressable onPress={() => handleUserDecision(true)} style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: "#1c1c1c", alignItems: "center", justifyContent: "center" }}>
+            <X size={24} color="#ffffff" />
           </Pressable>
-          <Text style={{ color: c.text3, fontSize: theme.font.caption, fontWeight: "500" }}>{popLabel}</Text>
+          <Text style={{ color: "#ffffff", fontSize: theme.font.caption, fontWeight: "500" }}>{popLabel}</Text>
         </View>
         <View style={{ alignItems: "center", gap: 8 }}>
-          <Pressable onPress={() => handleUserDecision(false)} style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: c.primary, alignItems: "center", justifyContent: "center" }}>
-            <Heart size={28} color={c.white} fill={c.white} />
+          <Pressable onPress={() => handleUserDecision(false)} style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: "#1c1c1c", alignItems: "center", justifyContent: "center" }}>
+            <Heart size={28} color="#ffffff" fill="#ffffff" />
           </Pressable>
-          <Text style={{ color: c.primary, fontSize: theme.font.caption, fontWeight: "500" }}>{keepLabel}</Text>
+          <Text style={{ color: "#ffffff", fontSize: theme.font.caption, fontWeight: "500" }}>{keepLabel}</Text>
         </View>
       </View>
     );
