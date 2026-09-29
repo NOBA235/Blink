@@ -10,8 +10,6 @@ import { PrimaryButton } from "../components/ui";
 
 const c = theme.color;
 
-// Original, locally rendered portraits keep the welcome screen fast and independent
-// of remote photo services. Each face has a distinct palette, hairstyle and outfit.
 const portraits = [
   { skin: "#D99A71", hair: "#30221F", shirt: "#D98D73", bg: "#F4DCCB", style: 0 },
   { skin: "#F0C9A2", hair: "#6E4734", shirt: "#789080", bg: "#DFE9DF", style: 1 },
