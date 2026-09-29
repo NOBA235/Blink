@@ -1,5 +1,7 @@
 # Blink
 
+**License: MIT** — see [LICENSE](./LICENSE).
+
 <div align="center">
 
 **Find your perfect match. Connect with people who match your vibe.**  
