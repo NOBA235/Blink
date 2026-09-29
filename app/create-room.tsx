@@ -19,7 +19,11 @@ export default function CreateRoomRoute() {
     });
 
     if (createError || !data) {
-      setError(createError?.message || "Could not create your room. Please try again.");
+      const profileMissing = createError?.code === "23503" &&
+        createError.message.includes("rooms_host_id_fkey");
+      setError(profileMissing
+        ? "Your profile needs a server update before you can host. Apply the latest Supabase migration, then try again."
+        : createError?.message || "Could not create your room. Please try again.");
       return;
     }
 

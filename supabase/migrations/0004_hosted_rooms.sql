@@ -60,6 +60,20 @@ AS $$
 DECLARE
   v_room public.rooms;
 BEGIN
+  IF auth.uid() IS NULL THEN
+    RAISE EXCEPTION 'You must be signed in to create a room';
+  END IF;
+
+  -- Keep room creation resilient if the auth signup trigger did not create
+  -- this user's profile row (rooms.host_id references public.profiles).
+  INSERT INTO public.profiles (id)
+  VALUES (auth.uid())
+  ON CONFLICT (id) DO NOTHING;
+
+  INSERT INTO public.profile_reveal (profile_id)
+  VALUES (auth.uid())
+  ON CONFLICT (profile_id) DO NOTHING;
+
   INSERT INTO public.rooms (host_id, title, vibe, max_participants, phase)
   VALUES (auth.uid(), p_title, p_vibe, p_max_participants, 'lobby')
   RETURNING * INTO v_room;
