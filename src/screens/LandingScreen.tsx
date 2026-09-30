@@ -16,7 +16,7 @@ export function LandingScreen() {
       <View style={{ flex: 1, paddingHorizontal: 22, paddingTop: 8, paddingBottom: 12 }}>
         <View style={{ height: 48, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 9 }}><LogoMark size={30} /><Text style={{ color: c.text, fontSize: 21, fontWeight: "800", letterSpacing: -0.6 }}>blink</Text></View>
-          <Pressable onPress={() => router.push("/auth")} hitSlop={10} style={{ paddingHorizontal: 15, paddingVertical: 9, borderRadius: 999, backgroundColor: c.surface2 }}>
+          <Pressable onPress={() => router.push({ pathname: "/auth", params: { mode: "signin" } })} hitSlop={10} style={{ paddingHorizontal: 15, paddingVertical: 9, borderRadius: 999, backgroundColor: c.surface2 }}>
             <Text style={{ color: c.primary, fontSize: 13, fontWeight: "700" }}>Sign in</Text>
           </Pressable>
         </View>

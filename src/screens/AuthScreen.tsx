@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, Text, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { theme } from "../theme";
 import { LogoMark } from "../components/LogoMark";
 import { PrimaryButton, GhostButton } from "../components/ui";
@@ -12,7 +12,8 @@ const c = theme.color;
 
 export function AuthScreen() {
   const { afterAuth } = useAppState();
-  const [mode, setMode] = useState<"signup" | "signin">("signup");
+  const { mode: requestedMode } = useLocalSearchParams<{ mode?: string }>();
+  const [mode, setMode] = useState<"signup" | "signin">(requestedMode === "signin" ? "signin" : "signup");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,6 +34,7 @@ export function AuthScreen() {
       // enabled. Don't send that user into onboarding as if they're signed in.
       if (!authResult.session) {
         setError("Check your email to confirm your account, then come back and sign in.");
+        setMode("signin");
         return;
       }
       const dest = await afterAuth();
