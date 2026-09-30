@@ -29,6 +29,18 @@ export type Room = {
 
 export type RoomEvent = { id: number; room_id: string; event_type: string; payload: any; created_at: string };
 
+export type OpenHostedRoom = {
+  id: string;
+  title: string | null;
+  vibe: string | null;
+  max_participants: number | null;
+  host_id: string;
+  host_name: string | null;
+  host_age: number | null;
+  host_photo_url: string | null;
+  participant_count: number;
+};
+
 // While waiting in the matchmaking queue, this is how a client finds out a
 // room has formed and it's been placed in it. Relies on room_participants'
 // self-referential RLS policy: a user can always see their own row, so

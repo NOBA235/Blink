@@ -263,5 +263,5 @@ npx tsc --noEmit
 ---
 
 <div align="center">
-Made with care by the Blink Team.
+Made with care by the Noba;
 </div>

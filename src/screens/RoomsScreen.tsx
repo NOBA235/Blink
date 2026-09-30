@@ -1,11 +1,12 @@
 import { useRef, useState } from "react";
-import { View, Text, ImageBackground, Pressable, ScrollView, NativeScrollEvent, NativeSyntheticEvent } from "react-native";
+import { View, Text, ImageBackground, Pressable, ScrollView, NativeScrollEvent, NativeSyntheticEvent, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { Users, LockKeyhole, MessageCircle, ChevronUp } from "lucide-react-native";
 import { theme } from "../theme";
 import { CONTESTANT_POOL, type Contestant } from "../data/contestants";
 import { usePremium } from "../hooks/usePremium";
+import type { OpenHostedRoom } from "../lib/useRealtimeRoom";
 
 const c = theme.color;
 const MOCK_ROOM_HOSTS = ["Noah", "Maya", "Eli", "Zoe", "Jordan", "Avery"];
@@ -21,10 +22,18 @@ export function RoomsScreen({
   contestants,
   onEnterRoom,
   onRefreshPool: _onRefreshPool,
+  hostedRooms = [],
+  loadingHostedRooms = false,
+  hostedRoomsError,
+  onJoinHostedRoom,
 }: {
   contestants: Contestant[];
   onEnterRoom: (c: Contestant) => void;
   onRefreshPool?: () => void;
+  hostedRooms?: OpenHostedRoom[];
+  loadingHostedRooms?: boolean;
+  hostedRoomsError?: string | null;
+  onJoinHostedRoom?: (roomId: string) => Promise<void>;
 }) {
   const { isPremium, triggerPaywall } = usePremium();
   // Keep the Rooms experience usable while hosted-room discovery is empty.
@@ -32,6 +41,23 @@ export function RoomsScreen({
   const [pageHeight, setPageHeight] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
+  const [joiningRoomId, setJoiningRoomId] = useState<string | null>(null);
+  const [joinedRoomIds, setJoinedRoomIds] = useState<string[]>([]);
+  const [joinError, setJoinError] = useState<string | null>(null);
+
+  async function joinRoom(roomId: string) {
+    if (!onJoinHostedRoom || joiningRoomId) return;
+    setJoiningRoomId(roomId);
+    setJoinError(null);
+    try {
+      await onJoinHostedRoom(roomId);
+      setJoinedRoomIds((ids) => ids.includes(roomId) ? ids : [...ids, roomId]);
+    } catch (error: any) {
+      setJoinError(error?.message || "Could not join this room. Please try again.");
+    } finally {
+      setJoiningRoomId(null);
+    }
+  }
 
   const handlePageChange = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     if (!pageHeight) return;
@@ -47,8 +73,47 @@ export function RoomsScreen({
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={["top"]}>
-      {(
+      {hostedRooms.length > 0 ? (
+        <ScrollView contentContainerStyle={{ padding: 20, gap: 14 }}>
+          <Text style={{ color: c.text, fontSize: 26, fontWeight: "800" }}>Live hosted rooms</Text>
+          <Text style={{ color: c.text2, fontSize: 14, marginBottom: 4 }}>Join a room created by another player.</Text>
+          {!!joinError && <Text style={{ color: c.danger, fontSize: 13 }}>{joinError}</Text>}
+          {hostedRooms.map((room) => {
+            const alreadyJoined = joinedRoomIds.includes(room.id);
+            const full = room.participant_count >= (room.max_participants || 4);
+            return (
+              <View key={room.id} style={{ backgroundColor: c.surface, borderColor: c.border, borderWidth: 1, borderRadius: 20, padding: 18, gap: 9 }}>
+                <Text style={{ color: c.text, fontSize: 18, fontWeight: "800" }}>{room.title || "Untitled Room"}</Text>
+                <Text style={{ color: c.text2, fontSize: 14 }}>
+                  Hosted by {room.host_name || "Blink player"}{room.host_age ? `, ${room.host_age}` : ""} · {room.vibe || "Open vibe"}
+                </Text>
+                <Text style={{ color: c.text3, fontSize: 13 }}>{room.participant_count} / {room.max_participants || 4} players</Text>
+                <Pressable
+                  disabled={alreadyJoined || full || joiningRoomId !== null}
+                  onPress={() => void joinRoom(room.id)}
+                  style={{ minHeight: 48, borderRadius: 14, backgroundColor: alreadyJoined || full ? c.surface3 : c.primary, alignItems: "center", justifyContent: "center", marginTop: 3 }}
+                >
+                  {joiningRoomId === room.id ? <ActivityIndicator color={c.white} /> : (
+                    <Text style={{ color: c.white, fontWeight: "700" }}>{alreadyJoined ? "Joined · waiting for host" : full ? "Room full" : "Join room"}</Text>
+                  )}
+                </Pressable>
+              </View>
+            );
+          })}
+          <Text style={{ color: c.text3, fontSize: 12, textAlign: "center", marginTop: 12 }}>Demo room previews</Text>
+          {MOCK_ROOMS.slice(0, 3).map((room) => (
+            <Text key={room.id} style={{ color: c.text3, fontSize: 13, textAlign: "center" }}>{room.name} · demo preview</Text>
+          ))}
+        </ScrollView>
+      ) : loadingHostedRooms ? (
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 12 }}>
+          <ActivityIndicator color={c.primary} />
+          <Text style={{ color: c.text2 }}>Checking for live hosted rooms…</Text>
+        </View>
+      ) : (
         <View style={{ flex: 1 }} onLayout={(event) => setPageHeight(event.nativeEvent.layout.height)}>
+          {!!hostedRoomsError && <Text style={{ color: c.danger, padding: 12, textAlign: "center" }}>Could not load hosted rooms: {hostedRoomsError}</Text>}
+          <Text style={{ color: c.text3, fontSize: 12, textAlign: "center", paddingTop: 8 }}>No live hosted rooms right now · demo previews</Text>
           <ScrollView
             ref={scrollRef}
             pagingEnabled

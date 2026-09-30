@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { router } from "expo-router";
 import { CreateRoomScreen } from "../src/screens/CreateRoomScreen";
@@ -8,7 +8,39 @@ import { theme } from "../src/theme";
 
 export default function CreateRoomRoute() {
   const [room, setRoom] = useState<RoomInfo | null>(null);
+  const [participants, setParticipants] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!room) return;
+    let cancelled = false;
+    const refreshParticipants = async () => {
+      const { data } = await supabase
+        .from("room_participants")
+        .select("profile_id, joined_at, profile:profiles(name, age, photo_url)")
+        .eq("room_id", room.id)
+        .order("joined_at", { ascending: true });
+      if (!cancelled && data) {
+        setParticipants(data.map((row: any) => ({
+          id: row.profile_id,
+          name: row.profile?.name || "Player",
+          age: row.profile?.age || 0,
+          photo: row.profile?.photo_url || "",
+          joinedAt: row.joined_at,
+        })));
+      }
+    };
+    void refreshParticipants();
+    const channel = supabase.channel(`host-room:${room.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "room_participants", filter: `room_id=eq.${room.id}` }, () => {
+        void refreshParticipants();
+      })
+      .subscribe();
+    return () => {
+      cancelled = true;
+      void supabase.removeChannel(channel);
+    };
+  }, [room?.id]);
 
   async function createRoom(title: string, vibe: string, maxParticipants: number) {
     setError(null);
@@ -49,7 +81,7 @@ export default function CreateRoomRoute() {
   return (
     <HostLobbyScreen
       room={room}
-      participants={[]}
+      participants={participants}
       compatibilityScores={{}}
       onStart={() => {}}
       onCancel={() => router.replace("/(tabs)/home")}
