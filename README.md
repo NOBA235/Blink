@@ -149,7 +149,8 @@ blink/
         ├── 0007_hosted_room_join_leave.sql # Hosted-room join and leave RPCs
         ├── 0008_room_rls_no_recursion.sql # Room policies without recursive RLS
         ├── 0009_hosted_room_gameplay.sql # Like/pass, icebreakers, match pick, safe leave
-        └── 0010_chat_access.sql         # Match-scoped chat reads and writes
+        ├── 0010_chat_access.sql         # Match-scoped chat reads and writes
+        └── 0011_match_chat_rpc.sql     # Authenticated read/send functions for chat
 ```
 
 ---

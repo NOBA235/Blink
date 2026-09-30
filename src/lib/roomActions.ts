@@ -36,11 +36,8 @@ export async function submitPersonalityAnswer(roomId: string, answer: string) {
 }
 
 export async function sendRealMessage(matchId: string, text: string) {
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError) throw authError;
-  if (!user) throw new Error("not signed in");
   const trimmed = text.trim();
   if (!trimmed) throw new Error("Message cannot be empty");
-  const { error } = await supabase.from("messages").insert({ match_id: matchId, sender_id: user.id, text: trimmed });
+  const { error } = await supabase.rpc("send_match_message", { p_match_id: matchId, p_text: trimmed });
   if (error) throw error;
 }

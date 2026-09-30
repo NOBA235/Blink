@@ -149,11 +149,7 @@ export function useRealtimeMessages(matchId: string | null) {
     setLoading(true);
 
     async function loadMessages() {
-      const { data, error: loadError } = await supabase
-        .from("messages")
-        .select("*")
-        .eq("match_id", matchId)
-        .order("created_at", { ascending: true });
+      const { data, error: loadError } = await supabase.rpc("get_match_messages", { p_match_id: matchId });
       if (cancelled) return;
       if (loadError) setError(loadError.message);
       else {
