@@ -41,5 +41,5 @@ export default function CreateRoomRoute() {
     );
   }
 
-  return <HostedRoomScreen roomId={roomId} onExit={() => router.replace("/(tabs)/home")} />;
+  return <HostedRoomScreen roomId={roomId} onExit={() => router.replace("/(tabs)/home")} onOpenChat={() => router.push("/chat")} />;
 }

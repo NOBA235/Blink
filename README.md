@@ -145,7 +145,10 @@ blink/
         ├── 0001_init.sql              # Core schema: profiles, rooms, messages, RLS
         ├── 0002_phase_engine.sql      # Room phase state machine
         ├── 0003_host_trigger.sql      # Event notifications for AI
-        └── 0004_hosted_rooms.sql      # Hosted rooms, compatibility scores, new RPCs
+        ├── 0004_hosted_rooms.sql      # Hosted rooms, compatibility scores, new RPCs
+        ├── 0007_hosted_room_join_leave.sql # Hosted-room join and leave RPCs
+        ├── 0008_room_rls_no_recursion.sql # Room policies without recursive RLS
+        └── 0009_hosted_room_gameplay.sql # Like/pass, icebreakers, match pick, safe leave
 ```
 
 ---

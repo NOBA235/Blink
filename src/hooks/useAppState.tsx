@@ -85,6 +85,7 @@ type AppStateValue = {
   handleLocalRoomExit: (result: { matched: boolean; contestant: Contestant; nextRoom?: boolean; openChat?: boolean; completed?: boolean }) => boolean;
   handleRealRoomExit: (result: { matched: boolean; matchId?: string; otherProfile?: any }) => void;
   openChat: (matchId: string) => void;
+  openRealChat: (matchId: string, otherProfile: { name: string; photo: string }) => void;
   closeChat: () => void;
   sendMockMessage: (matchId: string, text: string) => void;
 };
@@ -338,6 +339,15 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   }
 
   function openChat(matchId: string) { setActiveChatId(matchId); }
+  function openRealChat(matchId: string, otherProfile: { name: string; photo: string }) {
+    setMatches((current) => current.some((match) => match.id === matchId) ? current : [...current, {
+      id: matchId,
+      contestant: { name: otherProfile.name, photo: otherProfile.photo },
+      messages: [],
+      isReal: true,
+    }]);
+    setActiveChatId(matchId);
+  }
   function closeChat() { setActiveChatId(null); }
 
   function sendMockMessage(matchId: string, text: string) {
@@ -365,7 +375,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     datePreferences, updateDatePreferences, resetDatePreferences,
     activeRoomContestant, activeRealRoomId, queueWaiting, activeChat,
     enterLocalRoom, attemptRealRoom, cancelMatchmaking, handleLocalRoomExit, handleRealRoomExit,
-    openChat, closeChat, sendMockMessage,
+    openChat, openRealChat, closeChat, sendMockMessage,
   };
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;
