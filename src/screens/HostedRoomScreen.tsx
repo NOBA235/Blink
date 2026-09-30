@@ -32,7 +32,7 @@ export function HostedRoomScreen({ roomId, onExit, onOpenChat }: { roomId: strin
   const question = events.find((e) => e.event_type === "personality_question")?.payload?.question || "";
   const myAnswer = events.find((e) => e.event_type === "personality_answer" && e.payload.profile_id === myProfileId);
   const matchId = match?.id;
-  const otherId = match ? (match.profile_id_a === myProfileId ? match.profile_id_b : match.profile_id_a) : null;
+  const isMyMatch = Boolean(match && myProfileId && (match.profile_id_a === myProfileId || match.profile_id_b === myProfileId));
 
   const refresh = useCallback(async () => {
     const roomResult = await supabase.from("rooms").select("id,title,vibe,max_participants,host_id,phase").eq("id", roomId).maybeSingle();
@@ -60,13 +60,17 @@ export function HostedRoomScreen({ roomId, onExit, onOpenChat }: { roomId: strin
     setEvents(eventResult.data || []);
     const nextMatch = matchResult.data || null;
     setMatch(nextMatch);
-    const selectedId = nextMatch ? (nextMatch.profile_id_a === roomResult.data.host_id ? nextMatch.profile_id_b : nextMatch.profile_id_a) : null;
-    if (selectedId) {
-      const selected = selectedId === roomResult.data.host_id ? hostResult.data : byId.get(selectedId);
-      if (selected) setMatchPerson({ id: selected.id, name: selected.name || "Player", age: selected.age ?? null, photo: selected.photo_url || null, interests: selected.interests || [], prompts: selected.prompts || [] });
+    const otherProfileId = nextMatch
+      ? (nextMatch.profile_id_a === myProfileId ? nextMatch.profile_id_b : nextMatch.profile_id_a)
+      : null;
+    if (otherProfileId) {
+      const otherProfile = otherProfileId === roomResult.data.host_id ? hostResult.data : byId.get(otherProfileId);
+      setMatchPerson(otherProfile ? { id: otherProfile.id, name: otherProfile.name || "Player", age: otherProfile.age ?? null, photo: otherProfile.photo_url || null, interests: otherProfile.interests || [], prompts: otherProfile.prompts || [] } : null);
+    } else {
+      setMatchPerson(null);
     }
     setError(null); setLoading(false);
-  }, [roomId]);
+  }, [roomId, myProfileId]);
 
   useEffect(() => {
     void refresh();
@@ -176,7 +180,7 @@ export function HostedRoomScreen({ roomId, onExit, onOpenChat }: { roomId: strin
           {activePeople.map((p) => personCard(p, <Pressable disabled={busy} onPress={() => void run(() => supabase.rpc("pick_match", { p_room_id: roomId, p_participant_id: p.id }))} style={pickStyle}><Heart size={17} color={c.white} fill={c.white} /><Text style={{ color: c.white, fontWeight: "800" }}>Pick {p.name}</Text></Pressable>))}
         </> : <Wait message="The host is choosing their match. We'll let you know here." />)}
 
-        {phase === "closed" && (match && (isHost || otherId === myProfileId) ? <>
+        {phase === "closed" && (match && isMyMatch ? <>
           <Text style={{ color: c.white, fontSize: 18, marginBottom: 16 }}>It's a match! Start your conversation.</Text>
           {!!matchPerson && <View style={{ alignItems: "center", marginBottom: 18 }}>{matchPerson.photo && <Image source={{ uri: matchPerson.photo }} style={{ width: 120, height: 120, borderRadius: 60, marginBottom: 12 }} />}<Text style={{ color: c.white, fontSize: 22, fontWeight: "800" }}>{matchPerson.name}</Text></View>}
           <Button label="Open your chat" onPress={openChat} icon={<MessageCircle size={18} color={c.white} />} />
