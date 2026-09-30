@@ -139,36 +139,54 @@ export type ChatMessage = { id: number; match_id: string; sender_id: string; tex
 export function useRealtimeMessages(matchId: string | null) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!matchId) return;
+    if (!matchId) { setMessages([]); setLoading(false); return; }
     let cancelled = false;
+    setMessages([]);
+    setError(null);
     setLoading(true);
 
-    supabase
-      .from("messages")
-      .select("*")
-      .eq("match_id", matchId)
-      .order("created_at", { ascending: true })
-      .then(({ data }) => {
-        if (!cancelled) { setMessages((data as ChatMessage[]) || []); setLoading(false); }
-      });
+    async function loadMessages() {
+      const { data, error: loadError } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("match_id", matchId)
+        .order("created_at", { ascending: true });
+      if (cancelled) return;
+      if (loadError) setError(loadError.message);
+      else {
+        setError(null);
+        setMessages((current) => {
+          const byId = new Map(current.map((message) => [message.id, message]));
+          for (const message of (data || []) as ChatMessage[]) byId.set(message.id, message);
+          return [...byId.values()].sort((a, b) => a.created_at.localeCompare(b.created_at));
+        });
+      }
+      setLoading(false);
+    }
+    void loadMessages();
 
     const channel = supabase
       .channel(`messages:${matchId}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages", filter: `match_id=eq.${matchId}` },
-        (payload: any) =>
-          setMessages((cur) => (cur.some((m) => m.id === payload.new.id) ? cur : [...cur, payload.new]))
+        (payload: any) => setMessages((cur) => (cur.some((m) => m.id === payload.new.id) ? cur : [...cur, payload.new].sort((a, b) => a.created_at.localeCompare(b.created_at))))
       )
       .subscribe();
 
+    // Realtime can miss events during mobile backgrounding or a temporary
+    // socket disconnect. Polling keeps both sides' conversation current.
+    const timer = setInterval(() => void loadMessages(), 4000);
+
     return () => {
       cancelled = true;
+      clearInterval(timer);
       supabase.removeChannel(channel);
     };
   }, [matchId]);
 
-  return { messages, loading };
+  return { messages, loading, error };
 }

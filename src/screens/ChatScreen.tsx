@@ -14,9 +14,11 @@ export function ChatScreen({
   match, onBack, onSendMessage, myProfileId,
 }: { match: LocalMatch; onBack: () => void; onSendMessage: (matchId: string, text: string) => void; myProfileId: string | null }) {
   const [draft, setDraft] = useState("");
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
   const listRef = useRef<FlatList>(null);
   const isReal = Boolean(match.isReal);
-  const { messages: realMessages } = useRealtimeMessages(isReal ? match.id : null);
+  const { messages: realMessages, error: messageLoadError } = useRealtimeMessages(isReal ? match.id : null);
 
   const messages = isReal
     ? realMessages.map((m) => ({ from: m.sender_id === myProfileId ? "user" as const : "them" as const, text: m.text }))
@@ -29,10 +31,19 @@ export function ChatScreen({
   async function send() {
     if (!draft.trim()) return;
     const text = draft.trim();
-    setDraft("");
+    setSendError(null);
     if (isReal) {
-      try { await sendRealMessage(match.id, text); } catch { /* best-effort for now */ }
+      setSending(true);
+      try {
+        await sendRealMessage(match.id, text);
+        setDraft("");
+      } catch (error: any) {
+        setSendError(error?.message || "Message could not be sent. Please try again.");
+      } finally {
+        setSending(false);
+      }
     } else {
+      setDraft("");
       onSendMessage(match.id, text);
     }
   }
@@ -73,6 +84,8 @@ export function ChatScreen({
           )}
         />
 
+        {messageLoadError || sendError ? <Text style={{ color: c.danger, textAlign: "center", paddingHorizontal: 16, paddingBottom: 8 }}>{sendError || messageLoadError}</Text> : null}
+
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 16, paddingVertical: 12, borderTopWidth: 1, borderTopColor: c.border }}>
           <IconButton icon={<Mic size={16} color={c.text} />} onPress={() => {}} size={38} />
           <TextInput
@@ -81,9 +94,9 @@ export function ChatScreen({
             placeholderTextColor={c.text3}
             value={draft}
             onChangeText={setDraft}
-            onSubmitEditing={send}
+            onSubmitEditing={() => void send()}
           />
-          <Pressable onPress={send} style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: "#1c1c1c", alignItems: "center", justifyContent: "center" }}>
+          <Pressable disabled={sending} onPress={() => void send()} style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: "#1c1c1c", alignItems: "center", justifyContent: "center", opacity: sending ? 0.55 : 1 }}>
             <Send size={16} color="#ffffff" />
           </Pressable>
         </View>
