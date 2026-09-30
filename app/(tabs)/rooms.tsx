@@ -41,6 +41,7 @@ export default function Rooms() {
     const { error } = await supabase.rpc("join_room", { p_room_id: roomId });
     if (error) throw error;
     await loadHostedRooms();
+    router.push({ pathname: "/hosted-room", params: { roomId } });
   };
 
   return (

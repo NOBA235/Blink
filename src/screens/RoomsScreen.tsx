@@ -42,7 +42,6 @@ export function RoomsScreen({
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
   const [joiningRoomId, setJoiningRoomId] = useState<string | null>(null);
-  const [joinedRoomIds, setJoinedRoomIds] = useState<string[]>([]);
   const [joinError, setJoinError] = useState<string | null>(null);
 
   async function joinRoom(roomId: string) {
@@ -51,7 +50,6 @@ export function RoomsScreen({
     setJoinError(null);
     try {
       await onJoinHostedRoom(roomId);
-      setJoinedRoomIds((ids) => ids.includes(roomId) ? ids : [...ids, roomId]);
     } catch (error: any) {
       setJoinError(error?.message || "Could not join this room. Please try again.");
     } finally {
@@ -79,7 +77,6 @@ export function RoomsScreen({
           <Text style={{ color: c.text2, fontSize: 14, marginBottom: 4 }}>Join a room created by another player.</Text>
           {!!joinError && <Text style={{ color: c.danger, fontSize: 13 }}>{joinError}</Text>}
           {hostedRooms.map((room) => {
-            const alreadyJoined = joinedRoomIds.includes(room.id);
             const full = room.participant_count >= (room.max_participants || 4);
             return (
               <View key={room.id} style={{ backgroundColor: c.surface, borderColor: c.border, borderWidth: 1, borderRadius: 20, padding: 18, gap: 9 }}>
@@ -89,12 +86,12 @@ export function RoomsScreen({
                 </Text>
                 <Text style={{ color: c.text3, fontSize: 13 }}>{room.participant_count} / {room.max_participants || 4} players</Text>
                 <Pressable
-                  disabled={alreadyJoined || full || joiningRoomId !== null}
+                  disabled={full || joiningRoomId !== null}
                   onPress={() => void joinRoom(room.id)}
-                  style={{ minHeight: 48, borderRadius: 14, backgroundColor: alreadyJoined || full ? c.surface3 : c.primary, alignItems: "center", justifyContent: "center", marginTop: 3 }}
+                  style={{ minHeight: 48, borderRadius: 14, backgroundColor: full ? c.surface3 : c.primary, alignItems: "center", justifyContent: "center", marginTop: 3 }}
                 >
                   {joiningRoomId === room.id ? <ActivityIndicator color={c.white} /> : (
-                    <Text style={{ color: c.white, fontWeight: "700" }}>{alreadyJoined ? "Joined · waiting for host" : full ? "Room full" : "Join room"}</Text>
+                    <Text style={{ color: c.white, fontWeight: "700" }}>{full ? "Room full" : "Join room"}</Text>
                   )}
                 </Pressable>
               </View>
