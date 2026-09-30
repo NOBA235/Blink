@@ -46,7 +46,8 @@ function FloatingAvatar({ index, style }: { index: number; style: object }) {
     loop.start();
     return () => loop.stop();
   }, [index, lift]);
-  return <Animated.View style={[style, { transform: [{ translateY: lift }] }]}><View style={{ flex: 1, borderRadius: 999, overflow: "hidden", borderWidth: 3, borderColor: "#FFFFFF", backgroundColor: portraits[index].bg, elevation: 5 }}><Portrait index={index} /></View></Animated.View>;
+  const portrait = portraits[index % portraits.length];
+  return <Animated.View style={[style, { transform: [{ translateY: lift }] }]}><View style={{ flex: 1, borderRadius: 999, overflow: "hidden", borderWidth: 3, borderColor: "#FFFFFF", backgroundColor: portrait.bg, elevation: 5 }}><Portrait index={index} /></View></Animated.View>;
 }
 
 export function LandingScreen() {
