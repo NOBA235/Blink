@@ -18,8 +18,14 @@ const MOCK_ROOMS: Contestant[] = MOCK_ROOM_HOSTS.map((name, index) => ({
 }));
 
 export function RoomsScreen({
-  contestants, onEnterRoom,
-}: { contestants: Contestant[]; onEnterRoom: (c: Contestant) => void; onRefreshPool: () => void }) {
+  contestants,
+  onEnterRoom,
+  onRefreshPool: _onRefreshPool,
+}: {
+  contestants: Contestant[];
+  onEnterRoom: (c: Contestant) => void;
+  onRefreshPool?: () => void;
+}) {
   const { isPremium, triggerPaywall } = usePremium();
   // Keep the Rooms experience usable while hosted-room discovery is empty.
   const roomContestants = contestants.length > 0 ? contestants : MOCK_ROOMS;
@@ -99,7 +105,7 @@ export function RoomsScreen({
             })}
           </ScrollView>
           {roomContestants.length > 1 && (
-            <View pointerEvents="none" style={{ position: "absolute", top: 18, alignSelf: "center", flexDirection: "row", gap: 5 }}>
+            <View style={{ position: "absolute", top: 18, alignSelf: "center", flexDirection: "row", gap: 5, pointerEvents: "none" }}>
               {roomContestants.map((item, index) => <View key={item.id} style={{ width: 20, height: 3, borderRadius: 2, backgroundColor: index === activeIndex ? c.white : "rgba(255,255,255,0.44)" }} />)}
             </View>
           )}
