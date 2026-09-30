@@ -6,7 +6,7 @@ import { supabase } from "../../src/lib/supabase";
 import type { OpenHostedRoom } from "../../src/lib/useRealtimeRoom";
 
 export default function Rooms() {
-  const { availableContestants, enterLocalRoom, setPlayedIds } = useAppState();
+  const { availableContestants, enterLocalRoom, setPlayedIds, myProfileId } = useAppState();
   const [hostedRooms, setHostedRooms] = useState<OpenHostedRoom[]>([]);
   const [loadingRooms, setLoadingRooms] = useState(true);
   const [roomsError, setRoomsError] = useState<string | null>(null);
@@ -17,14 +17,24 @@ export default function Rooms() {
     if (error) {
       setRoomsError(error.message);
     } else {
-      setHostedRooms((data || []) as OpenHostedRoom[]);
+      setHostedRooms(((data || []) as OpenHostedRoom[]).filter((room) => room.host_id !== myProfileId));
     }
     setLoadingRooms(false);
-  }, []);
+  }, [myProfileId]);
 
   useFocusEffect(useCallback(() => {
     setLoadingRooms(true);
     void loadHostedRooms();
+    const channel = supabase.channel("open-hosted-rooms")
+      .on("postgres_changes", { event: "*", schema: "public", table: "rooms" }, () => {
+        void loadHostedRooms();
+      })
+      .subscribe();
+    const refreshTimer = setInterval(() => void loadHostedRooms(), 15000);
+    return () => {
+      clearInterval(refreshTimer);
+      void supabase.removeChannel(channel);
+    };
   }, [loadHostedRooms]));
 
   const joinHostedRoom = async (roomId: string) => {

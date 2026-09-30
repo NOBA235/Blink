@@ -124,7 +124,6 @@ export function RoomsScreen({
             style={{ flex: 1 }}
           >
             {roomContestants.map((contestant, i) => {
-              const peopleCount = 8 + (Array.from(contestant.id).reduce((n, ch) => n + ch.charCodeAt(0), 0) % 17);
               return (
               <View key={contestant.id} style={{ width: "100%", height: pageHeight || "100%", backgroundColor: "#211722" }}>
                   <ImageBackground source={{ uri: contestant.photo }} resizeMode="cover" imageStyle={{ transform: [{ scale: 1.08 }] }} blurRadius={16} style={{ flex: 1, justifyContent: "space-between" }}>
@@ -132,11 +131,11 @@ export function RoomsScreen({
                     <View style={{ paddingHorizontal: 22, paddingTop: 14, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                       <View style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(20,12,20,0.54)", paddingHorizontal: 12, paddingVertical: 8, borderRadius: theme.radius.full }}>
                         <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: "#FF5C70" }} />
-                        <Text style={{ color: c.white, fontSize: theme.font.caption, fontWeight: "700", letterSpacing: 0.5 }}>LIVE ROOM</Text>
+                        <Text style={{ color: c.white, fontSize: theme.font.caption, fontWeight: "700", letterSpacing: 0.5 }}>DEMO PREVIEW</Text>
                       </View>
                       <View style={{ flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: "rgba(20,12,20,0.54)", paddingHorizontal: 12, paddingVertical: 8, borderRadius: theme.radius.full }}>
                         <Users size={15} color={c.white} />
-                        <Text style={{ color: c.white, fontSize: theme.font.caption, fontWeight: "700" }}>{peopleCount} vibing</Text>
+                        <Text style={{ color: c.white, fontSize: theme.font.caption, fontWeight: "700" }}>Sample room</Text>
                       </View>
                     </View>
 
@@ -144,8 +143,8 @@ export function RoomsScreen({
                       <View style={{ alignSelf: "flex-start", backgroundColor: "rgba(255,255,255,0.16)", borderRadius: theme.radius.full, paddingHorizontal: 12, paddingVertical: 7, marginBottom: 14 }}>
                         <Text style={{ color: c.white, fontSize: theme.font.caption, fontWeight: "600" }}>{contestant.location} · Room {i + 1}</Text>
                       </View>
-                      <Text style={{ color: c.white, fontSize: 34, lineHeight: 40, fontWeight: "800", marginBottom: 7 }}>{contestant.name} is vibing</Text>
-                      <Text style={{ color: "rgba(255,255,255,0.82)", fontSize: 16, lineHeight: 23, marginBottom: 24 }}>with {peopleCount} people right now</Text>
+                      <Text style={{ color: c.white, fontSize: 34, lineHeight: 40, fontWeight: "800", marginBottom: 7 }}>{contestant.name}'s demo room</Text>
+                      <Text style={{ color: "rgba(255,255,255,0.82)", fontSize: 16, lineHeight: 23, marginBottom: 24 }}>Preview how a hosted room works</Text>
                       <Pressable onPress={() => onEnterRoom(contestant)} style={{ minHeight: 56, borderRadius: theme.radius.full, backgroundColor: c.white, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 10 }}>
                         <MessageCircle size={19} color={c.primary} />
                         <Text style={{ color: c.primary, fontSize: 16, fontWeight: "800" }}>Enter room to chat</Text>

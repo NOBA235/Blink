@@ -232,6 +232,8 @@ Run the SQL scripts in `supabase/migrations/` sequentially in your Supabase SQL 
 * `0002_phase_engine.sql` — Room phase state machine
 * `0003_host_trigger.sql` — Event notifications for AI host
 * `0004_hosted_rooms.sql` — Hosted rooms, compatibility scores, new RPCs
+* `0005_repair_host_profile.sql` — Ensure existing users have profiles before hosting
+* `0006_close_hosted_room.sql` — Allow hosts to close cancelled rooms
 
 ### 2. Deploy Edge Functions
 ```bash

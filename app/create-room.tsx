@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { Alert, Text, View } from "react-native";
 import { router } from "expo-router";
 import { CreateRoomScreen } from "../src/screens/CreateRoomScreen";
 import { HostLobbyScreen, type RoomInfo } from "../src/screens/HostLobbyScreen";
@@ -67,6 +67,16 @@ export default function CreateRoomRoute() {
     });
   }
 
+  async function cancelRoom() {
+    if (!room) return;
+    const { error: closeError } = await supabase.rpc("close_hosted_room", { p_room_id: room.id });
+    if (closeError) {
+      Alert.alert("Could not close room", closeError.message);
+      return;
+    }
+    router.replace("/(tabs)/home");
+  }
+
   if (!room) {
     return (
       <View style={{ flex: 1 }}>
@@ -84,7 +94,7 @@ export default function CreateRoomRoute() {
       participants={participants}
       compatibilityScores={{}}
       onStart={() => {}}
-      onCancel={() => router.replace("/(tabs)/home")}
+      onCancel={() => { void cancelRoom(); }}
     />
   );
 }
