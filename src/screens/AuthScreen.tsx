@@ -36,7 +36,7 @@ export function AuthScreen() {
         return;
       }
       const dest = await afterAuth();
-      router.replace(dest === "onboarding" ? "/onboarding" : "/(tabs)/home");
+      router.replace(dest === "onboarding" ? "/explore" : "/(tabs)/home");
     } catch (err: any) {
       setError(err?.message || "Something went wrong. Try again.");
     } finally {

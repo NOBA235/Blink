@@ -23,6 +23,7 @@ function RootNavigator() {
     <Stack screenOptions={{ headerShown: false, animation: "fade" }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="auth" />
+      <Stack.Screen name="explore" />
       <Stack.Screen name="onboarding" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="create-room" options={{ presentation: "card", animation: "slide_from_right" }} />
