@@ -36,7 +36,9 @@
         {
           "photosPermission": "Pop uses your photos to let you add a profile picture."
         }
-      ]
+      ],
+      "expo-audio",
+      "expo-status-bar"
     ],
     "extra": {
       "router": {}

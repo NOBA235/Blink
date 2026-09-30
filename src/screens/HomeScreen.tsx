@@ -338,7 +338,7 @@ export function HomeScreen({
           {/* Blurred Background Host Photo */}
           <Image
             source={{ uri: featuredHost.photo }}
-            style={StyleSheet.absoluteFillObject}
+            style={StyleSheet.absoluteFill}
             blurRadius={Platform.OS === "ios" ? 18 : 10}
             resizeMode="cover"
           />
@@ -350,7 +350,7 @@ export function HomeScreen({
               "rgba(18, 10, 18, 0.96)",
             ]}
             locations={[0, 0.5, 1]}
-            style={StyleSheet.absoluteFillObject}
+            style={StyleSheet.absoluteFill}
           />
 
           <View style={styles.heroRoomContent}>
